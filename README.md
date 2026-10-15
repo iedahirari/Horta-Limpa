@@ -5,7 +5,7 @@
 Projeto de extensão **“Agrotóxicos: impactos ambientais e riscos à saúde”** · Itinerário Extensionista II
 Centro Universitário Braz Cubas · Ciência da Computação · Mogi das Cruzes (SP)
 
-### 👉 [Jogar agora](https://iedahirari.github.io/Itiner-rio-Extensionista-II/)
+### 👉 [Jogar agora](https://iedahirari.github.io/Horta-Limpa/)
 
 Funciona no navegador do computador e do celular (deitado). Não precisa instalar nada.
 
@@ -121,7 +121,7 @@ O mesmo ciclo acontece:
 
 ## Como jogar
 
-1. Abra o [jogo](https://iedahirari.github.io/Itiner-rio-Extensionista-II/), veja a história do José e siga o tutorial.
+1. Abra o [jogo](https://iedahirari.github.io/Horta-Limpa/), veja a história do José e siga o tutorial.
 2. Prepare a terra ⛏️, plante 🌱, regue 💧 e cuide das pragas 🐛.
 3. Colha ✋ e lave no 🚰 tanque. O Raio-X mostra se o alimento está limpo.
 4. Vá até a vila pelo 🗺️ **Mapa**: compre na Cooperativa, converse com os vizinhos e entregue pacotes na Feira Comunitária.
