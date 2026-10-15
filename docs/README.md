@@ -12,7 +12,7 @@ Jogo educativo de horta em visão isométrica, inspirado em Stardew Valley, feit
 - **Topo central:** avisos.
 - **Embaixo, no centro:** barra de 12 espaços (ferramentas, sementes, produtos e a 🧺 cesta). As teclas 1 a 0 escolhem o item.
 - **Ao lado da barra:** a saúde do José.
-- **Canto inferior esquerdo:** 🎒 Inventário (E), 📔 Diário (J), 🗺️ Mapa (M), 🛒 Loja (L, leva o José até a Cooperativa), 📖 Guia (G), 🌙 Dormir e ⚙️ Menu (Esc).
+- **Canto inferior esquerdo:** 🎒 Inventário (E), 📔 Diário (J), 🗺️ Mapa (M), 🛒 Loja (L: compra rápida, o José vai à vila, compra na Cooperativa ou na AgroMax e volta sozinho para a horta), 📖 Guia (G), 🌙 Dormir e ⚙️ Menu (Esc).
 - **Embaixo do relógio:** 🍽️ a próxima refeição e quanta comida há na despensa.
 
 **Ano com 4 estações:** Primavera → Verão → Outono → Inverno, com 7 dias cada (28 dias no ano). A horta continua de uma estação para a outra. Cada alimento tem a sua época: a Cooperativa só vende semente da época, e na troca de estação a planta que não é da época **murcha**. Isso ensina a preferir alimento da época. Como no Stardew, **as plantas crescem de um dia para o outro**: basta regar cada planta uma vez por dia, e o resto do dia fica livre para ir à vila, conversar e explorar. O relógio corre das 6h às 22h (1 hora = 7 segundos, cerca de 2 minutos por dia, com ⏸ pausa e ⏩ 2×). De manhã, um resumo da noite mostra o que ficou pronto, quem passou sede e as novas pragas.

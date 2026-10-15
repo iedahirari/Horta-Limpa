@@ -484,10 +484,24 @@
     el.innerHTML = `🍽️ ${r.nome} ${String(r.h).padStart(2, "0")}h · <b>${n}</b> <span class="mx">${n === 1 ? "refeição" : "refeições"} na despensa</span>${n === 0 ? " <b>colha e lave comida!</b>" : boas === 0 ? " <span class=\"mx\">(só biscoito)</span>" : ""}`;
   }
   /* atalho: o José vai até a Cooperativa (1 hora de caminhada se estiver na fazenda) */
+  /* compra rápida: da fazenda, o José vai à vila, compra e volta sozinho para a horta (1 hora no total) */
   function irLoja() {
-    if (G.area !== "vila") { travel("vila"); toast("🛒 O José foi até a Cooperativa, na vila (1 hora de caminhada).", null, "good", 3500); }
+    if (G.area !== "vila") { G.compraRapida = true; toast("🛒 O José foi rapidinho à vila. Ao fechar a loja, ele volta para a horta.", null, "good", 3500); }
     openShop();
   }
+  function fecharLoja() {
+    closeModal();
+    if (G.compraRapida) {
+      G.compraRapida = false;
+      if (!G.over && !(G.tut >= 0 && G.tut <= 4)) hourTick();   // ida e volta: 1 hora
+      toast("🏡 O José voltou para a horta com as compras.", null, "good", 2500);
+      renderUI();
+    }
+    if (G.factQueue.length) nextFact();
+  }
+  const rodapeLoja = (outra) => G.compraRapida
+    ? `<div class="row"><button class="btn green" id="closeloja">🏡 Voltar para a horta</button>${outra}</div>`
+    : `<div class="row"><button class="btn green" id="closeloja">Voltar para a vila</button>${outra}</div>`;
   const cropIcon = (id) => ({ alface: "🥬", couve: "🥬", tomate: "🍅", pimentao: "🌶️", cenoura: "🥕", pepino: "🥒", flores: "🌼", uva: "🍇", milho: "🌽", cebola: "🧅" }[id]);
   /* itens da despensa (plantas, ovos, conservas, biscoito) */
   const itemNome = (d) => (ITEMS[d.id] ? ITEMS[d.id].nome : CROPS[d.id] ? CROPS[d.id].nome : d.nome || d.id);
@@ -620,6 +634,11 @@
     const [x, y] = p;
     G.focus = p;
     G.player.tx = x + 0.5; G.player.ty = y + 0.5;
+    // não entra nas construções: para na porta (e não pisa em cima dos vizinhos)
+    const pb = naVila() ? predioEm(x, y) : null;
+    if (pb) { const b = VILA[pb]; G.player.tx = b.x + b.w / 2; G.player.ty = b.y + b.d + 0.4; }
+    else if (!naVila() && isSpot("casa", x, y)) { G.player.tx = 1.0; G.player.ty = 2.4; }
+    else if (naVila() && npcEm(x, y)) { G.player.tx = x + 0.5; G.player.ty = y + 1.2; }
     if (naVila()) { actVila(x, y); renderUI(); return; }
     const tt = T(x, y);
     if (tt.crop && !tt.crop.dead && CROPS[tt.crop.id].para !== null) fact("anvisa", "🔬");
@@ -1004,7 +1023,8 @@
           ${G.up.galinheiro ? `<button class="prod up" id="galinha" ${G.galinhas >= GALINHAS_MAX || G.coins < GALINHA_PRECO ? "disabled" : ""}><span class="i">🐔</span><b>Galinha caipira <span class="have">· ${G.galinhas}/${GALINHAS_MAX}</span></b><span class="price">🪙 ${GALINHA_PRECO}</span><small>Come insetos da horta (menos pragas) e bota 1 ovo por dia.</small></button>` : ""}</div></section>
       </div>
       <p class="small muted">Agrotóxicos e EPI ficam na AgroMax, do outro lado da praça.</p>
-      <div><button class="btn green" id="close">Voltar para a vila</button></div></div>`);
+      ${rodapeLoja(`<button class="btn ghost" id="outraloja">🏢 Passar na AgroMax</button>`)}</div>`);
+    $("#outraloja").onclick = openAgroMax;
     bindProdButtons(openShop);
     modalEl.querySelectorAll("[data-u]").forEach((b) => {
       b.onclick = () => {
@@ -1029,7 +1049,7 @@
         openShop(); renderUI();
       };
     });
-    $("#close").onclick = () => { closeModal(); if (G.factQueue.length) nextFact(); };
+    $("#closeloja").onclick = fecharLoja;
   }
   function openAgroMax() {
     fact("agromax", "🏢");
@@ -1052,7 +1072,8 @@
         <p class="small"><b>Em troca:</b> o galpão da Feira Comunitária vira depósito da AgroMax (a feira acaba) e, toda segunda-feira, a equipe da AgroMax pulveriza agrotóxico na sua horta.</p>
         <button class="btn" id="assinar">Assinar contrato</button></section>` : ""}
       ${G.agromax ? `<section class="contrato"><h3>🏷️ Vender para a AgroMax</h3>${vendaveis.map(({ d, idx }) => `<div class="xrow">${itemLinha(d, idx.length)}<button class="btn sellag" data-i="${idx[0]}">Vender 🪙${precoVenda({ ...d, chem: false })}</button></div>`).join("") || `<p class="small muted">Nada na despensa para vender.</p>`}</section>` : ""}
-      <div><button class="btn green" id="close">Voltar para a vila</button></div></div>`);
+      ${rodapeLoja(`<button class="btn ghost" id="outraloja">🏪 Passar na Cooperativa</button>`)}</div>`);
+    $("#outraloja").onclick = openShop;
     bindProdButtons(openAgroMax);
     const as = $("#assinar");
     if (as) as.onclick = () => {
@@ -1064,7 +1085,7 @@
     modalEl.querySelectorAll(".sellag").forEach((b) => {
       b.onclick = () => { const i = +b.dataset.i, d = G.despensa[i]; G.despensa.splice(i, 1); G.coins += precoVenda({ ...d, chem: false }); G.vendidos++; sfx.coin(); addPts(2, `Vendeu ${itemNome(d).toLowerCase()} para a AgroMax`); openAgroMax(); renderUI(); };
     });
-    $("#close").onclick = () => { closeModal(); if (G.factQueue.length) nextFact(); };
+    $("#closeloja").onclick = fecharLoja;
   }
 
   /* ==========================================================
@@ -1456,7 +1477,28 @@
     edge(x0, y0, x1 + 1, y0); edge(x0, y0, x0, y1 + 1);
   }
 
+  /* Como no Stardew: se um personagem está atrás de uma construção, ela fica transparente */
+  function alguemAtras(fx, fy, w, d, H, pts) {
+    const [lx] = toScreen(fx, fy + d), [rx] = toScreen(fx + w, fy), [, topY] = toScreen(fx, fy), [, botY] = toScreen(fx + w, fy + d);
+    const frente = fx + w + fy + d;
+    return pts.some(([ex, ey]) => {
+      const [sx, sy] = toScreen(ex, ey);
+      return ex + ey < frente - 0.8 && sx > lx + 6 && sx < rx - 6 && sy > topY - H - 40 && sy - 70 < botY && sy < botY + 4;
+    });
+  }
+  function pontosPersonagens() {
+    const pts = [];
+    if (G) { pts.push([G.player.x, G.player.y]); }
+    if (naVila()) NPCS.forEach((n) => pts.push([n.pos[0] + 0.5, n.pos[1] + 0.5]));
+    else (G && G.galinhasPos || []).forEach((g) => pts.push([g.x, g.y]));
+    return pts;
+  }
   function drawHouse(c) {
+    const transp = alguemAtras(0, 0, 2, 2, 46, pontosPersonagens());
+    if (transp) { c.save(); c.globalAlpha = 0.4; drawHouseBody(c); c.restore(); return; }
+    drawHouseBody(c);
+  }
+  function drawHouseBody(c) {
     const [ax, ay] = toScreen(0, 0), [bx, by] = toScreen(2, 0), [dx, dy] = toScreen(0, 2), [ex, ey] = toScreen(2, 2);
     const H = 46;
     // paredes
@@ -1925,8 +1967,9 @@
     const P = G ? G.player : null;
     const pDepth = P ? Math.floor(P.x) + Math.floor(P.y) : -1;
     const galinhas = [];
+    if (G) G.galinhasPos = galinhas;
     for (let i = 0; G && G.up && G.up.galinheiro && i < (G.galinhas || 0); i++) {
-      const gx = 1.1 + 0.55 * Math.sin(time * 0.35 + i * 2.3), gy = 3.6 + 1.6 * Math.sin(time * 0.22 + i * 1.7);
+      const gx = 1.05 + 0.55 * Math.sin(time * 0.35 + i * 2.3), gy = 5.45 + 0.4 * Math.sin(time * 0.22 + i * 1.7);   // em volta do galinheiro
       galinhas.push({ x: gx, y: gy, x0: Math.floor(gx), s: Math.floor(gx) + Math.floor(gy), i });
     }
     for (let s = 0; s < N * 2 - 1; s++) {
@@ -1975,7 +2018,7 @@
       for (let x = 0; x <= s; x++) {
         const y = s - x; if (x >= N || y >= N) continue;
         const [sx, sy] = toScreen(x, y), cx = sx, cy = sy + TH / 2;
-        Object.entries(VILA).forEach(([k, b]) => { if (x === b.x + b.w - 1 && y === b.y + b.d - 1) drawPredio(c, k, b, time); });
+        Object.entries(VILA).forEach(([k, b]) => { if (x === b.x + b.w - 1 && y === b.y + b.d - 1) { const tr = alguemAtras(b.x, b.y, b.w, b.d, 50, pontosPersonagens()); if (tr) { c.save(); c.globalAlpha = 0.4; } drawPredio(c, k, b, time); if (tr) c.restore(); } });
         if (isVSpot("arvores", x, y)) drawTree(c, cx, cy);
         if (isVSpot("paraFazenda", x, y)) drawSign(c, cx, cy, "➜ Fazenda");
         if (isVSpot("festa", x, y)) { if (F) drawFestaStall(c, cx, cy, time, F); else drawFonte(c, cx, cy, time); }
@@ -2000,12 +2043,22 @@
     if (k === "feira" && !G.agromax && ruina < 1) { // tábuas na porta
       c.strokeStyle = "#6b4a2e"; c.lineWidth = 3; c.beginPath(); c.moveTo(mx - 11, my - 26); c.lineTo(mx + 11, my - 6); c.moveTo(mx + 11, my - 26); c.lineTo(mx - 11, my - 6); c.stroke();
     }
-    c.globalAlpha = k === "feira" && !G.agromax ? 0.25 + 0.75 * ruina : 1;
     c.fillStyle = telhado;
     c.beginPath(); c.moveTo(dx - 4, dy - H); c.lineTo(ex, ey - H + 4); c.lineTo((ax + ex) / 2, (ay + ey) / 2 - H - 36); c.lineTo((ax + dx) / 2 - 4, (ay + dy) / 2 - H - 36); c.closePath(); c.fill();
     c.fillStyle = telhado2;
     c.beginPath(); c.moveTo(ex, ey - H + 4); c.lineTo(bx + 4, by - H); c.lineTo((ax + bx) / 2 + 4, (ay + by) / 2 - H - 36); c.lineTo((ax + ex) / 2, (ay + ey) / 2 - H - 36); c.closePath(); c.fill();
-    c.globalAlpha = 1;
+    if (k === "feira" && !G.agromax && ruina < 1) {   // telhado quebrado: cada pacote entregue conserta um buraco
+      const buracos = BUNDLES.length - G.bundlesFeitos.length;
+      const pos = [[0.25, 0.45, 0], [0.6, 0.3, 0], [0.4, 0.75, 0], [0.3, 0.4, 1], [0.65, 0.6, 1], [0.45, 0.2, 1]];
+      const pico = [(ax + ex) / 2, (ay + ey) / 2 - H - 36];
+      pos.slice(0, buracos).forEach(([u, v, lado]) => {
+        const base = lado ? [ex + (bx - ex) * u, ey - H + 4 + (by - ey) * u] : [dx + (ex - dx) * u, dy - H + (ey - dy) * u];
+        const px = base[0] + (pico[0] - base[0]) * v * 0.6, py = base[1] + (pico[1] - base[1]) * v * 0.9;
+        c.fillStyle = "#3b2a1a"; c.beginPath(); c.ellipse(px, py, 9, 5, lado ? -0.45 : 0.45, 0, 7); c.fill();
+        c.strokeStyle = "#8a6a45"; c.lineWidth = 2; c.beginPath(); c.moveTo(px - 8, py - 2); c.lineTo(px + 7, py + 3); c.stroke();
+      });
+      if (buracos > 0) { c.fillStyle = "#c98b4f"; c.save(); c.translate(mx + 20, my - 40); c.rotate(-0.4); c.fillRect(-16, -2, 32, 5); c.restore(); }
+    }
     if (k === "feira" && ruina >= 1 && !G.agromax) { // bandeirinhas da feira reaberta
       for (let i = 0; i < 8; i++) { c.fillStyle = ["#e2432a", "#f4b53f", "#3d8b3d", "#2f74c0"][i % 4]; const px = dx + (ex - dx) * (i / 8), py = dy - H + (ey - dy) * (i / 8); c.beginPath(); c.moveTo(px, py + 2); c.lineTo(px + 8, py + 6); c.lineTo(px + 3, py + 13); c.closePath(); c.fill(); }
     }
