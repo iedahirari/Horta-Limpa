@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Horta Limpa</title>
+<meta name="description" content="Jogo educativo: cuide da sua horta, escolha entre agrotóxicos e alternativas e descubra o que fica no alimento. Projeto de extensão – Braz Cubas, Mogi das Cruzes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app"></div>
+<div id="modal" class="modal" hidden></div>
+<div id="dayfx" class="dayfx" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div id="rotate" class="rotate" role="dialog" aria-label="Gire o celular">
+  <div class="phone" aria-hidden="true">📱</div>
+  <p><b>Gire o celular</b> para jogar deitado e ver a horta inteira.</p>
+  <button id="empe">Prefiro jogar em pé</button>
+</div>
+<script>document.getElementById("empe").onclick=function(){document.body.classList.remove("want-landscape");try{localStorage.setItem("hortaLimpa.emPe","true")}catch(e){}};</script>
+<script src="data.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
