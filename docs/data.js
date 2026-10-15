@@ -6,37 +6,35 @@
 
 const SEASON_DAYS = 7;       // dias por estação (o ano tem 4 estações = 28 dias)
 const YEAR_DAYS = SEASON_DAYS * 4;
-const HOUR_MS = 5000;        // 1 hora de jogo = 5 segundos reais (no ⏩ 2x, 2,5 s)
+const HOUR_MS = 7000;        // 1 hora de jogo = 7 segundos reais (um dia ≈ 2 minutos; no ⏩ 2x, 1 minuto)
 const DAY_START = 6, DAY_END = 22; // o dia vai das 6h às 22h
-const AGUA_HORAS = 6;        // depois de regar, a terra fica úmida por 6 horas
-const SEDE_MORTE = 6;        // horas sem água até a planta morrer
-const PRAGA_DANO = 5, PRAGA_MORTE = 10; // horas de praga até danificar / destruir
+const PRAGA_DANO = 1, PRAGA_MORTE = 3;   // dias de praga até danificar / destruir (como no Stardew, tudo muda de um dia para o outro)
 const META_MOEDAS = 300;     // meta do ano: juntar moedas vendendo na banca
 const START_COINS = 20;
 const START_HEARTS = 5;
 
-/* Culturas. horas = horas de jogo até a colheita (com a terra úmida). para = fração de amostras irregulares no Brasil. */
+/* Culturas. dias = dias até a colheita (regando todo dia, como no Stardew Valley). para = fração de amostras irregulares no Brasil. */
 const CROPS = {
-  alface:   { estacoes: ["primavera", "outono", "inverno"], nome: "Alface",   horas: 2, preco: 2, venda: 5, pragas: ["pulgao", "lesma"], para: null, ano: "Anvisa 2023",
+  alface:   { estacoes: ["primavera", "outono", "inverno"], nome: "Alface",   dias: 2, preco: 2, venda: 5, pragas: ["pulgao", "lesma"], para: null, ano: "Anvisa 2023",
               cor: "#8fd16a", fruto: null },
-  couve:    { estacoes: ["primavera", "outono", "inverno"], nome: "Couve",    horas: 3, preco: 2, venda: 6, pragas: ["pulgao", "lagarta"], para: 0.35, ano: "Anvisa 2024",
+  couve:    { estacoes: ["primavera", "outono", "inverno"], nome: "Couve",    dias: 3, preco: 2, venda: 6, pragas: ["pulgao", "lagarta"], para: 0.35, ano: "Anvisa 2024",
               cor: "#2f7d32", fruto: null },
-  tomate:   { estacoes: ["primavera", "verao"], nome: "Tomate",   horas: 5, preco: 3, venda: 10, pragas: ["moscaBranca", "lagarta", "fungo"], para: 0.35, ano: "Anvisa 2017–2018",
+  tomate:   { estacoes: ["primavera", "verao"], nome: "Tomate",   dias: 4, preco: 3, venda: 10, pragas: ["moscaBranca", "lagarta", "fungo"], para: 0.35, ano: "Anvisa 2017–2018",
               cor: "#3d8b3d", fruto: "#e2432a", mogi: true },
-  pimentao: { estacoes: ["primavera", "verao"], nome: "Pimentão", horas: 5, preco: 3, venda: 11, pragas: ["pulgao", "moscaBranca"], para: 0.80, ano: "Anvisa 2017–2018",
+  pimentao: { estacoes: ["primavera", "verao"], nome: "Pimentão", dias: 4, preco: 3, venda: 11, pragas: ["pulgao", "moscaBranca"], para: 0.80, ano: "Anvisa 2017–2018",
               cor: "#3d8b3d", fruto: "#2e9e2e" },
-  cenoura:  { estacoes: ["primavera", "outono", "inverno"], nome: "Cenoura",  horas: 4, preco: 2, venda: 8, pragas: ["lagarta"], para: 0.39, ano: "Anvisa 2017–2018",
+  cenoura:  { estacoes: ["primavera", "outono", "inverno"], nome: "Cenoura",  dias: 3, preco: 2, venda: 8, pragas: ["lagarta"], para: 0.39, ano: "Anvisa 2017–2018",
               cor: "#5fb84a", fruto: "#f08a24" },
-  pepino:   { estacoes: ["verao", "outono"], nome: "Pepino",   horas: 3, preco: 2, venda: 6, pragas: ["fungo", "moscaBranca"], para: 0.46, ano: "Anvisa 2024",
+  pepino:   { estacoes: ["verao", "outono"], nome: "Pepino",   dias: 3, preco: 2, venda: 6, pragas: ["fungo", "moscaBranca"], para: 0.46, ano: "Anvisa 2024",
               cor: "#4a9a3c", fruto: "#2f7d32" },
   // culturas das temporadas novas (aparecem só na temporada indicada)
-  uva:      { estacoes: ["verao"], nome: "Uva",      horas: 5, preco: 3, venda: 12, pragas: ["fungo", "moscaBranca"], para: 0.28, ano: "Anvisa 2024",
+  uva:      { estacoes: ["verao"], nome: "Uva",      dias: 5, preco: 3, venda: 12, pragas: ["fungo", "moscaBranca"], para: 0.28, ano: "Anvisa 2024",
               cor: "#4a9a3c", fruto: "#7b3fa0" },
-  milho:    { estacoes: ["verao"], nome: "Milho",    horas: 4, preco: 2, venda: 7, pragas: ["lagarta"], para: 0.03, ano: "Anvisa 2024",
+  milho:    { estacoes: ["verao"], nome: "Milho",    dias: 4, preco: 2, venda: 7, pragas: ["lagarta"], para: 0.03, ano: "Anvisa 2024",
               cor: "#6cb84f", fruto: "#f4c430" },
-  cebola:   { estacoes: ["outono", "inverno"], nome: "Cebola",   horas: 4, preco: 2, venda: 7, pragas: ["fungo", "pulgao"], para: 0.13, ano: "Anvisa 2024",
+  cebola:   { estacoes: ["outono", "inverno"], nome: "Cebola",   dias: 3, preco: 2, venda: 7, pragas: ["fungo", "pulgao"], para: 0.13, ano: "Anvisa 2024",
               cor: "#5fb84a", fruto: "#d9a35b" },
-  flores:   { estacoes: ["primavera", "verao", "outono", "inverno"], nome: "Cravo-de-defunto", horas: 2, preco: 1, venda: 0, pragas: [], para: null, companheira: true,
+  flores:   { estacoes: ["primavera", "verao", "outono", "inverno"], nome: "Cravo-de-defunto", dias: 2, preco: 1, venda: 0, pragas: [], para: null, companheira: true,
               cor: "#4a9a3c", fruto: "#f4a62a" },
 };
 
@@ -57,23 +55,23 @@ const PESTS = {
 /* Produtos da Loja da Cooperativa.
    tipo: agro (agrotóxico) | alt (alternativa) | epi
    registrado: culturas em que o agrotóxico pode ser usado (está no rótulo).
-   carencia: dias que precisa esperar entre a aplicação e a colheita. */
+   carencia: dias que precisa esperar entre a aplicação e a colheita (o jogo conta em dias). */
 const PRODUCTS = [
   { id: "inseticidaQ", nome: "Inseticida Q", tipo: "agro", preco: 3, icone: "🧪", cor: "#7b3fa0",
-    mata: ["pulgao", "lagarta", "moscaBranca"], registrado: ["tomate", "pimentao"], carencia: 4,
-    desc: "Mata na hora. Carência: 4 horas." },
+    mata: ["pulgao", "lagarta", "moscaBranca"], registrado: ["tomate", "pimentao"], carencia: 2,
+    desc: "Mata na hora. Carência: 2 dias." },
   { id: "inseticidaF", nome: "Inseticida F", tipo: "agro", preco: 3, icone: "🧪", cor: "#b0397a",
-    mata: ["pulgao", "lagarta"], registrado: ["couve", "cenoura"], carencia: 3,
-    desc: "Mata na hora. Carência: 3 horas." },
+    mata: ["pulgao", "lagarta"], registrado: ["couve", "cenoura"], carencia: 2,
+    desc: "Mata na hora. Carência: 2 dias." },
   { id: "fungicidaC", nome: "Fungicida C", tipo: "agro", preco: 3, icone: "🧪", cor: "#3f5aa0",
-    mata: ["fungo"], registrado: ["tomate"], carencia: 3,
-    desc: "Acaba com fungo. Carência: 3 horas." },
+    mata: ["fungo"], registrado: ["tomate"], carencia: 2,
+    desc: "Acaba com fungo. Carência: 2 dias." },
   { id: "joaninhas", nome: "Joaninhas", tipo: "alt", preco: 2, icone: "🐞",
     mata: ["pulgao", "moscaBranca"], atraso: 1,
     desc: "Controle biológico: comem pulgão e mosca-branca em 1 hora e protegem as vizinhas. Sem resíduo." },
   { id: "neem", nome: "Calda de neem", tipo: "alt", preco: 1, icone: "🌿",
     mata: ["pulgao", "lagarta", "moscaBranca"], chance: 0.7, carencia: 1,
-    desc: "Extrato natural. Nem sempre funciona de primeira. Espere 1 hora e lave antes de colher." },
+    desc: "Extrato natural. Nem sempre funciona de primeira. Espere 1 dia e lave antes de colher." },
   { id: "epi", nome: "EPI completo", tipo: "epi", preco: 4, icone: "🥽",
     desc: "Luvas, máscara, óculos, avental e botas. Obrigatório para aplicar agrotóxico. Compra uma vez." },
 ];
@@ -82,7 +80,7 @@ const PRODUCTS = [
 const TOOLS = [
   { id: "mao",     nome: "Mão",     icone: "✋", dica: "Colhe e cata lagarta e lesma" },
   { id: "enxada",  nome: "Enxada",  icone: "⛏️", dica: "Prepara a terra" },
-  { id: "regador", nome: "Regador", icone: "💧", dica: "Rega a planta (a água dura 4 horas)" },
+  { id: "regador", nome: "Regador", icone: "💧", dica: "Rega a planta (vale para o dia todo)" },
   { id: "tesoura", nome: "Tesoura", icone: "✂️", dica: "Poda folhas com fungo" },
 ];
 
@@ -142,8 +140,8 @@ const TUTORIAL = [
   { t: "Boa! Escolha a semente de 🥬 alface na barra.", hl: { slot: "seed:alface" }, ev: "sel:seed:alface" },
   { t: "Toque no canteiro para plantar.", hl: { tile: [3, 3] }, ev: "plant" },
   { t: "Planta precisa de água! Pegue o 💧 regador e regue o canteiro.", hl: { slot: "tool:regador" }, ev: "water" },
-  { t: "O relógio começou a andar (canto de cima, à direita). Plante mais e regue tudo. À noite eu durmo sozinho, ou toque em 🌙 para pular para amanhã.", hl: { btn: "sleep" }, ev: "sleep" },
-  { t: "Bom dia! Embaixo de cada planta tem uma barrinha azul de água: quando acaba, aparece “💧 Sede!”. Eu almoço às 12h e janto às 19h com o que tiver na despensa: o 🍽️ embaixo do relógio mostra quanta comida eu tenho.", hl: { slot: "tool:regador" }, ev: "allwatered" },
+  { t: "O relógio começou a andar (canto de cima, à direita). Como no Stardew, as plantas crescem <b>durante a noite</b>: regue uma vez por dia e pronto! Tem o dia todo para explorar. Quando quiser, toque em 🌙 para dormir.", hl: { btn: "sleep" }, ev: "sleep" },
+  { t: "Bom dia! A horta cresceu durante a noite. Todo dia de manhã a água acaba: as plantas mostram “💧 Regar”. Regue de novo. Eu almoço às 12h e janto às 19h com o que tiver na despensa: o 🍽️ embaixo do relógio mostra quanta comida eu tenho.", hl: { slot: "tool:regador" }, ev: "allwatered" },
   { t: "As sementes e os tratamentos são vendidos na Cooperativa, na vila. Toque em 🛒 Loja (no canto de baixo, à esquerda) e eu vou até lá.", hl: { btn: "loja" }, ev: "shop" },
   { t: "Na vila moram meus vizinhos: converse com eles, cada um sabe muita coisa! Depois volte para a fazenda, cuide das pragas e colha quando aparecer o ✓.", hl: null, ev: "harvest" },
   { t: "Colheu! Toque na 🧺 cesta da barra (ou no 🚰 tanque) para lavar do jeito certo. Depois o laboratório analisa.", hl: { btn: "deliver", tile: [7, 2] }, ev: "deliver" },
@@ -151,7 +149,7 @@ const TUTORIAL = [
 ];
 
 /* Comida inicial do José (ultraprocessado) */
-const START_PANTRY = 3;
+const START_PANTRY = 5;
 
 /* Fatos extras da história */
 Object.assign(FACTS, {
@@ -195,7 +193,7 @@ const ACHIEVEMENTS = [
 ];
 Object.assign(FACTS, {
   pragaErrada: { t: "Cada agrotóxico combate pragas específicas. Usar o produto errado não resolve, desperdiça dinheiro e ainda deixa resíduo na planta.", f: "Rótulo e bula do produto" },
-  sede:        { t: "Embaixo de cada planta tem uma barrinha azul de água. Quando ela acaba, a planta fica com sede e aparece um balão “💧 Sede!” com as horas que faltam até ela morrer. Regue com 💧!", f: "" },
+  sede:        { t: "Como no Stardew Valley, as plantas crescem <b>de um dia para o outro</b>, mas só se forem <b>regadas uma vez por dia</b>. Planta sem água mostra “💧 Regar”; se passar o dia sem água, ela não cresce e fica com sede. Com sede por vários dias, morre.", f: "" },
   banca:       { t: "Alimento sem agrotóxico vale mais na banca! Mas lembre: o José precisa de comida na despensa para jantar.", f: "" },
 });
 
@@ -204,7 +202,7 @@ Object.assign(FACTS, {
    REFEIÇÕES E PEDIDOS (ritmo mais rápido)
    ========================================================== */
 const MEALS = [{ h: 12, nome: "almoço" }, { h: 19, nome: "jantar" }];
-const PEDIDO_HORAS = 8;       // cada pedido vale por 8 horas
+const PEDIDO_HORAS = 8;       // (não usado: cada pedido vale até as 20h do dia seguinte)
 
 /* ==========================================================
    PIA DA COZINHA: como lavar cada alimento (fundamentação: Anvisa 2025; Marins 2025; Yang et al. 2017)
@@ -284,10 +282,10 @@ const REP_PRECO = [0, 0.9, 1, 1.1, 1.2, 1.35];   // multiplicador por estrelas
 const UPGRADES = [
   { id: "regadorG",    nome: "Regador grande", icone: "🚿", preco: 20, desc: "Rega o canteiro tocado e os vizinhos (3×3) de uma vez." },
   { id: "canteiros",   nome: "Mais canteiros", icone: "🟫", preco: 25, desc: "A horta cresce: de 4×4 para 5×6 canteiros." },
-  { id: "cisterna",    nome: "Cisterna",       icone: "🛢️", preco: 30, desc: "Guarda água da chuva: a terra fica úmida 3 horas a mais." },
-  { id: "composteira", nome: "Composteira",    icone: "🪱", preco: 35, desc: "Adubo orgânico: as plantas crescem 25% mais rápido, sem química." },
+  { id: "cisterna",    nome: "Cisterna",       icone: "🛢️", preco: 30, desc: "Guarda água da chuva: a rega vale por 2 dias." },
+  { id: "composteira", nome: "Composteira",    icone: "🪱", preco: 35, desc: "Adubo orgânico: as plantas crescem mais rápido, sem química." },
   { id: "galinheiro",  nome: "Galinheiro",     icone: "🛖", preco: 30, desc: "Abrigo para até 4 galinhas. Depois compre as galinhas aqui na Cooperativa." },
-  { id: "pote",        nome: "Pote de conserva", icone: "🥫", preco: 25, desc: "Transforma alimento lavado em conserva caseira (4 horas). Vale mais na banca." },
+  { id: "pote",        nome: "Pote de conserva", icone: "🥫", preco: 25, desc: "Transforma alimento lavado em conserva caseira (pronta em 4 horas). Vale mais na banca." },
 ];
 
 /* ==========================================================
@@ -304,9 +302,9 @@ const SEASONS = [
    ONDE VOCÊ PERDEU PONTOS: dica para cada tipo de erro
    ========================================================== */
 const LOSS_TIPS = {
-  sede:       ["💧 Plantas que morreram de sede", "Regue assim que a barrinha azul acabar. Use ⏸ se precisar de tempo."],
-  praga:      ["🐛 Plantas perdidas para a praga", "Trate a praga logo: a etiqueta vermelha mostra quantas horas faltam."],
-  carencia:   ["⏳ Colheu durante a carência", "Depois do agrotóxico, espere o número roxo zerar antes de colher."],
+  sede:       ["💧 Plantas que morreram de sede", "Regue cada planta uma vez por dia (o balão “💧 Regar” avisa)."],
+  praga:      ["🐛 Plantas perdidas para a praga", "Trate a praga no mesmo dia: a etiqueta vermelha mostra quantos dias faltam."],
+  carencia:   ["⏳ Colheu durante a carência", "Depois do agrotóxico, espere os dias de carência (número roxo) antes de colher."],
   registro:   ["📋 Produto não registrado para a planta", "Leia \"Pode usar em\" na loja: cada agrotóxico só vale para algumas plantas."],
   errado:     ["❌ Produto errado para a praga", "Leia \"Combate\" na loja antes de comprar."],
   semPraga:   ["🚫 Agrotóxico sem praga", "Só trate quando houver praga. Aplicar à toa deixa resíduo."],

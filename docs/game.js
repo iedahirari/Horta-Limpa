@@ -53,7 +53,7 @@
   const weekday = () => (G.day - 1) % 7;
   const isFeira = () => G && weekday() === FEIRA_DIA - 1;
   const festival = () => (isFeira() ? FESTIVALS[SEA().id] : null);
-  const aguaMax = () => Math.max(2, AGUA_HORAS + (G && G.up && G.up.cisterna ? 3 : 0) + SEA().agua);
+  const aguaMax = () => (G && G.up && G.up.cisterna ? 2 : 1);   // regar vale para hoje (com cisterna, até amanhã)
   const repStars = () => Math.max(1, Math.min(5, Math.floor(G.rep || REP_INICIAL)));
   const doEpoca = (id, S = SEA()) => CROPS[id].estacoes.includes(S.id);
   function applyUpgrades() {
@@ -102,7 +102,7 @@
   };
   const $ = (s, el = document) => el.querySelector(s);
   /* ---------- salvar o progresso (localStorage) ---------- */
-  const SAVE = "hortaLimpa.save3";   // versão Stardew (não carrega os jogos salvos antigos)
+  const SAVE = "hortaLimpa.save4";   // versão Stardew (não carrega os jogos salvos antigos)
   function saveGame() {
     if (!G || !G.started || G.over) return;
     try {
@@ -264,7 +264,7 @@
     for (let y = 2; y <= 5; y++) for (let x = 2; x <= 5; x++) {
       const t = T(x, y); t.soil = true; t.watered = (x + y) % 2 === 0;
       const [id, st] = demo[k++ % demo.length];
-      t.crop = { id, age: st === 3 ? CROPS[id].horas : st * 3, stage: st, pest: null, carencia: 0, chem: false, irregular: null, sede: 0, dano: 0, dead: false };
+      t.crop = { id, age: st === 3 ? CROPS[id].dias : st, stage: st, pest: null, carencia: 0, chem: false, irregular: null, sede: 0, dano: 0, dead: false };
     }
     T(4, 4).crop.pest = { id: "pulgao", h: 0 };
     G.galinhas = 2; G.up.galinheiro = true;
@@ -524,13 +524,13 @@
       const tags = [];
       if (c.dead) tags.push(`<span class="tag bad">morreu: use a ⛏️ enxada para limpar</span>`);
       else if (c.stage >= 3) tags.push(`<span class="tag good">pronta para colher</span>`);
-      else tags.push(`<span class="tag">⏱️ ${Math.ceil(C.horas - Math.min(c.age, C.horas))}h para colher</span>`);
-      if (!c.dead && c.stage < 3) tags.push(t.agua > 0 ? `<span class="tag good">💧 água por ${Math.ceil(t.agua)}h</span>` : `<span class="tag bad">💧 COM SEDE: morre em ${SEDE_MORTE - c.sede}h</span>`);
-      if (c.pest) tags.push(`<span class="tag bad">${PESTS[c.pest.id].nome}${c.pest.morreEm !== undefined ? " (sendo controlada)" : `: a planta morre em ${Math.max(0, PRAGA_MORTE - (c.pest.h || 0))}h`}</span>`);
-      if (c.carencia > 0) tags.push(`<span class="tag agro">carência: ${c.carencia}h</span>`);
+      else { const d = Math.ceil(C.dias - Math.min(c.age, C.dias)); tags.push(`<span class="tag">⏱️ ${d} ${d === 1 ? "dia" : "dias"} para colher</span>`); }
+      if (!c.dead && c.stage < 3) tags.push(t.agua > 0 ? `<span class="tag good">💧 regada hoje: cresce esta noite</span>` : c.sede ? `<span class="tag bad">💧 COM SEDE há ${c.sede} dia(s): regue hoje!</span>` : `<span class="tag">💧 precisa ser regada hoje</span>`);
+      if (c.pest) tags.push(`<span class="tag bad">${PESTS[c.pest.id].nome}${c.pest.morreEm !== undefined ? " (sendo controlada)" : `: a planta morre em ${Math.max(0, PRAGA_MORTE - (c.pest.h || 0))} dia(s)`}</span>`);
+      if (c.carencia > 0) tags.push(`<span class="tag agro">carência: ${c.carencia} dia(s)</span>`);
       if (c.irregular) tags.push(`<span class="tag bad">${esc(c.irregular)}</span>`);
       if (c.chem) tags.push(`<span class="tag agro">recebeu agrotóxico</span>`);
-      if (t.joaninhas > 0) tags.push(`<span class="tag good">🐞 joaninhas (${t.joaninhas}h)</span>`);
+      if (t.joaninhas > 0) tags.push(`<span class="tag good">🐞 joaninhas (${t.joaninhas} dia(s))</span>`);
       if (!c.dead && !doEpoca(c.id)) tags.push(`<span class="tag bad">fora da época</span>`);
       const pinfo = c.pest ? `<div class="pestbox"><b>${PESTS[c.pest.id].icone} ${PESTS[c.pest.id].nome}:</b> ${PESTS[c.pest.id].desc}<br><b>Como tratar:</b> ${PESTS[c.pest.id].trata}</div>` : "";
       h = `<span class="big">${cropIcon(c.id)} ${C.nome}</span><div>${tags.join(" ")}</div>${pinfo}${C.para !== null ? paraHTML(C) : ""}`;
@@ -550,7 +550,7 @@
       q.className = "quest";
       const e = G.encomenda;
       q.innerHTML = e && !e.feita
-        ? `<b>📦</b>&nbsp;${e.avatar} ${esc(e.cliente)}: ${e.qtd}× ${cropIcon(e.id)}${e.semAgro ? " <b>sem agrotóxico</b>" : ""} · 🪙${e.paga} · ⏳${Math.max(0, e.expira - Math.floor(G.hour))}h`
+        ? `<b>📦</b>&nbsp;${e.avatar} ${esc(e.cliente)}: ${e.qtd}× ${cropIcon(e.id)}${e.semAgro ? " <b>sem agrotóxico</b>" : ""} · 🪙${e.paga} · ⏳${prazoTxt(e)}`
         : `<b>🎯</b>&nbsp;${G.agromax ? "Juntar moedas e manter o José saudável" : `Feira Comunitária: ${G.bundlesFeitos.length}/${BUNDLES.length} pacotes`}`;
     }
   }
@@ -670,7 +670,7 @@
       }
       if (S.id === "regador") {
         if (!t.soil) { toast("Primeiro prepare a terra com a enxada.", null, "", 2400); return; }
-        if (t.agua >= aguaMax() - 1 && !G.up.regadorG) { toast("A terra já está úmida.", null, "", 1800); return; }
+        if (t.agua >= aguaMax() && !G.up.regadorG) { toast("Já foi regada hoje. Ela cresce esta noite. 🌙", null, "", 2200); return; }
         t.agua = aguaMax(); t.watered = true; sfx.water(); floatText(fx, fy, "💧", "#3a7bd5");
         if (G.up.regadorG) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = T(t.x + dx, t.y + dy); if (n && n.soil && inFarm(n.x, n.y)) { n.agua = aguaMax(); n.watered = true; } }
         if (c) { quest("regar"); tut("water"); if (G.tiles.every((x) => !x.crop || x.crop.dead || x.watered)) tut("allwatered"); }
@@ -684,7 +684,7 @@
         }
         if (c.pest) { toast(`${PESTS[c.pest.id].nome} é pequeno demais para catar. Tente joaninhas, calda de neem ou a tesoura (fungo).`, null, "", 4200); return; }
         if (CROPS[c.id].companheira) { toast("As flores ficam: elas atraem joaninhas e protegem as vizinhas. 🌼", null, "", 3000); return; }
-        if (c.stage < 3) { toast(`Ainda não está pronta. Faltam ${Math.ceil(CROPS[c.id].horas - c.age)} horas com a terra úmida.`, null, "", 2400); return; }
+        if (c.stage < 3) { toast(`Ainda não está pronta. Faltam ${Math.ceil(CROPS[c.id].dias - c.age)} dia(s): regue todo dia e ela cresce à noite.`, null, "", 2400); return; }
         harvest(t, fx, fy); return;
       }
       if (S.id === "tesoura") {
@@ -746,7 +746,7 @@
         addPts(-5, "Aplicou agrotóxico sem praga para combater", "semPraga");
         toast("Não havia praga nenhuma. Aplicar agrotóxico sem necessidade é desperdício e deixa resíduo.", -5, "bad", 4500);
       } else {
-        toast(`Praga eliminada. Agora espere a <b>carência de ${P.carencia} horas</b> antes de colher.`, null, "", 4500);
+        toast(`Praga eliminada. Agora espere a <b>carência de ${P.carencia} dias</b> antes de colher.`, null, "", 4500);
         fact("carencia", "⏳");
       }
       G.inv.embalagens++;
@@ -757,18 +757,18 @@
     // alternativas
     G.stats.alternativas++;
     if (P.id === "joaninhas") {
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = T(t.x + dx, t.y + dy); if (n) n.joaninhas = 4; }
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = T(t.x + dx, t.y + dy); if (n) n.joaninhas = 2; }
       sfx.good(); floatText(fx, fy, "🐞", "#c2341f"); fact("joaninha", "🐞"); unlock("joaninha");
-      if (c.pest && P.mata.includes(c.pest.id)) { c.pest.morreEm = 1; toast("Joaninhas soltas! Em 1 hora elas comem a praga e protegem as vizinhas por 4 horas.", null, "good"); quest("praga"); }
+      if (c.pest && P.mata.includes(c.pest.id)) { c.pest.morreEm = 1; toast("Joaninhas soltas! Em 1 hora elas comem a praga e protegem as vizinhas por 2 dias.", null, "good"); quest("praga"); }
       else if (c.pest) toast(`Joaninhas não comem ${PESTS[c.pest.id].nome.toLowerCase()}. <span class='jeito'>Para ${PESTS[c.pest.id].nome.toLowerCase()}: ${PESTS[c.pest.id].trata}</span>`, null, "bad", 6000);
-      else toast("Joaninhas soltas: protegem esta planta e as vizinhas por 4 horas.", null, "good");
+      else toast("Joaninhas soltas: protegem esta planta e as vizinhas por 2 dias.", null, "good");
       addPts(5, "Usou controle biológico");
       return;
     }
     if (P.id === "neem") {
       c.carencia = Math.max(c.carencia, P.carencia);
       if (c.pest && P.mata.includes(c.pest.id)) {
-        if (rnd() < P.chance) { c.pest = null; addPts(8, "Calda natural funcionou"); floatText(fx, fy, "+8", "#2f7d32"); sfx.good(); toast("A calda de neem funcionou! Espere 1 hora e lave antes de colher.", 8, "good"); quest("praga"); }
+        if (rnd() < P.chance) { c.pest = null; addPts(8, "Calda natural funcionou"); floatText(fx, fy, "+8", "#2f7d32"); sfx.good(); toast("A calda de neem funcionou! Espere 1 dia e lave antes de colher.", 8, "good"); quest("praga"); }
         else { sfx.bad(); toast("Dessa vez a calda não resolveu. Tente de novo ou use joaninhas.", null, ""); }
       } else if (c.pest) toast(`A calda de neem não combate ${PESTS[c.pest.id].nome.toLowerCase()}. <span class='jeito'>Para ${PESTS[c.pest.id].nome.toLowerCase()}: ${PESTS[c.pest.id].trata}</span>`, null, "bad", 6000);
       else toast("Não havia praga aqui.", null, "");
@@ -779,7 +779,7 @@
     const c = t.crop, C = CROPS[c.id];
     let status = "ok", motivo = "";
     if (c.irregular) { status = "irregular"; motivo = c.irregular; }
-    else if (c.carencia > 0) { status = "irregular"; motivo = `colhida na carência (faltavam ${c.carencia} horas)`; }
+    else if (c.carencia > 0) { status = "irregular"; motivo = `colhida na carência (faltavam ${c.carencia} dia(s))`; }
     G.cesta.push({ id: c.id, status, motivo, chem: c.chem, dano: c.dano });
     setTimeout(() => tut("harvest"), 0);
     unlock("colheita");
@@ -885,14 +885,17 @@
      ========================================================== */
   const feiraRestaurada = () => G.bundlesFeitos.length >= BUNDLES.length && !G.agromax;
   function novaEncomenda() {
-    const opts = Object.keys(CROPS).filter((id) => !CROPS[id].companheira && doEpoca(id) && CROPS[id].horas <= 2 + G.day);
+    let opts = Object.keys(CROPS).filter((id) => !CROPS[id].companheira && doEpoca(id));
+    const plantados = opts.filter((id) => G.tiles.some((t) => t.crop && !t.crop.dead && t.crop.id === id) || G.despensa.some((d) => d.id === id));
+    if (plantados.length) opts = plantados;   // pede o que o jogador já está cultivando
     if (!opts.length) return;
     const id = opts[Math.floor(rnd() * opts.length)];
     const qtd = 1 + Math.floor(rnd() * 2);
     const semAgro = rnd() < 0.5;
     const cl = CLIENTES[Math.floor(rnd() * CLIENTES.length)];
-    G.encomenda = { id, qtd, semAgro, cliente: cl.nome, avatar: cl.avatar, npc: cl.npc || null,
-      paga: Math.round(CROPS[id].venda * qtd * (semAgro ? 1.8 : 1.4) * REP_PRECO[repStars()] * (isFeira() ? FEIRA_BONUS : 1)) + 4, feita: false, expira: Math.min(DAY_END, G.hour + PEDIDO_HORAS) };
+    G.encomenda = { id, qtd, semAgro, cliente: cl.nome, avatar: cl.avatar, npc: cl.npc || null, expiraAbs: true,
+      paga: Math.round(CROPS[id].venda * qtd * (semAgro ? 1.8 : 1.4) * REP_PRECO[repStars()] * (isFeira() ? FEIRA_BONUS : 1)) + 4, feita: false, expira: G.day * 24 + 20 };
+    G.proxPedido = G.day * 24 + DAY_START + 1;   // o próximo pedido chega amanhã
   }
   const precoVenda = (d) => Math.max(1, Math.round(itemVendaBase(d) * (d.chem ? 1 : SEM_AGRO_BONUS) * REP_PRECO[repStars()] * (isFeira() ? (feiraRestaurada() ? 2 : FEIRA_BONUS) : 1) * (G.bonusBanca || 1)));
   function changeRep(d) {
@@ -923,7 +926,7 @@
       <div class="row" style="justify-content:space-between"><h2>🏷️ Banca do José</h2><span class="chip">🪙 ${G.coins}</span></div>
       <div class="repline"><span class="stars big">${"★".repeat(repStars())}<i>${"★".repeat(5 - repStars())}</i></span> <span class="small">Reputação: preços ×${String(REP_PRECO[repStars()]).replace(".", ",")}. Sobe vendendo sem agrotóxico e entregando pedidos.</span></div>
       ${isFeira() ? `<div class="feirabar">🎪 <b>Sábado é dia de feira!</b> Vendas valem ${feiraRestaurada() ? "o dobro (Feira Comunitária aberta)" : "50% mais"}.</div>` : ""}
-      ${e && !e.feita ? `<div class="order"><div class="av">${e.avatar}</div><div><b>${esc(e.cliente)}</b> quer <b>${e.qtd}× ${cropIcon(e.id)} ${CROPS[e.id].nome.toLowerCase()}</b>${e.semAgro ? " <b>sem agrotóxico</b>" : ""}.<div class="small">Paga 🪙${e.paga} + 25 pontos${e.npc ? " + amizade ❤️" : ""} · ⏳ faltam ${Math.max(0, e.expira - Math.floor(G.hour))}h · você tem ${tem}/${e.qtd}</div></div>
+      ${e && !e.feita ? `<div class="order"><div class="av">${e.avatar}</div><div><b>${esc(e.cliente)}</b> quer <b>${e.qtd}× ${cropIcon(e.id)} ${CROPS[e.id].nome.toLowerCase()}</b>${e.semAgro ? " <b>sem agrotóxico</b>" : ""}.<div class="small">Paga 🪙${e.paga} + 25 pontos${e.npc ? " + amizade ❤️" : ""} · ⏳ ${prazoTxt(e)} · você tem ${tem}/${e.qtd}</div></div>
         <button class="btn" id="entregar" ${tem >= e.qtd ? "" : "disabled"}>Entregar</button></div>`
         : `<div class="order done" style="background:#f3eee5;border-color:var(--line)">⏳ Nenhum pedido agora. Novos pedidos chegam ao longo do dia.</div>`}
       <div class="foodbox ${comidaNaDespensa() <= 2 ? "low" : ""}">🍽️ <b>Comida do José:</b> ${comidaNaDespensa()} ${comidaNaDespensa() === 1 ? "refeição guardada" : "refeições guardadas"}. Ele come <b>1 item da despensa no almoço (12h) e 1 no jantar (19h)</b>, sozinho. Guarde pelo menos 2 e venda só o que sobrar.</div>
@@ -986,7 +989,7 @@
       const C = CROPS[id];
       return `<button class="prod" data-s="${id}" ${G.coins < C.preco ? "disabled" : ""}><span class="i">${cropIcon(id)}</span>
         <b>${C.nome}${G.inv.seeds[id] ? ` <span class="have">· ${G.inv.seeds[id]}</span>` : ""}</b><span class="price">🪙 ${C.preco}</span>
-        <small>${C.companheira ? "Flor companheira: atrai joaninhas" : `${C.horas} horas para colher`}</small></button>`;
+        <small>${C.companheira ? "Flor companheira: atrai joaninhas" : `${C.dias} ${C.dias === 1 ? "dia" : "dias"} para colher`}</small></button>`;
     };
     const S = SEA(), prox = SEASONS[(seasonIdx(G.day) + 1) % 4];
     openModal(`<div class="box stack">
@@ -1293,13 +1296,13 @@
       const C = CROPS[e.id], nome = C.nome.toLowerCase();
       const tem = G.despensa.filter((d) => d.id === e.id && d.status === "ok" && (!e.semAgro || !d.chem)).length;
       const pl = growing(e.id), falta = Math.max(0, e.qtd - tem), seeds = G.inv.seeds[e.id] || 0;
-      const dica = !falta ? "✅ Já tem! Entregue na 🏷️ banca." : pl >= falta ? `Cuide ${pl > 1 ? "dos pés" : "do pé"} de ${nome} e colha quando aparecer ✓.` : `Plante mais ${falta - pl} de ${nome} (leva ${C.horas}h). ${seeds ? `Você tem ${seeds} semente(s).` : `Compre sementes na Cooperativa (🪙${C.preco}).`}`;
+      const dica = !falta ? "✅ Já tem! Entregue na 🏷️ banca." : pl >= falta ? `Cuide ${pl > 1 ? "dos pés" : "do pé"} de ${nome} e colha quando aparecer ✓.` : `Plante mais ${falta - pl} de ${nome} (leva ${C.dias} dias). ${seeds ? `Você tem ${seeds} semente(s).` : `Compre sementes na Cooperativa (🪙${C.preco}).`}`;
       h += `<div class="planorder"><b>📦 Pedido de ${e.avatar} ${esc(e.cliente)}</b><br>${e.qtd}× ${cropIcon(e.id)} ${nome}${e.semAgro ? " <b>sem agrotóxico</b>" : ""} · paga 🪙${e.paga}
-        <div class="small muted">⏳ faltam ${Math.max(0, e.expira - Math.floor(G.hour))}h · na despensa ${tem}/${e.qtd} · plantado: ${pl}</div><div class="small"><b>👉 ${dica}</b></div></div>`;
+        <div class="small muted">⏳ ${prazoTxt(e)} · na despensa ${tem}/${e.qtd} · plantado: ${pl}</div><div class="small"><b>👉 ${dica}</b></div></div>`;
     } else h += `<div class="planorder calm small">⏳ Nenhum pedido agora. Plante o que vende bem e guarde comida para o José.</div>`;
-    const ids = Object.keys(CROPS).filter((id) => !CROPS[id].companheira && doEpoca(id)).sort((a, b) => CROPS[b].venda / CROPS[b].horas - CROPS[a].venda / CROPS[a].horas);
-    h += `<table class="plantab"><thead><tr><th>${SEA().icone} da época</th><th>⏱️</th><th>🪙 venda</th><th>🌱</th></tr></thead><tbody>${ids.map((id) => `<tr class="${e && e.id === id ? "hot" : ""}"><td>${cropIcon(id)} ${CROPS[id].nome}</td><td>${CROPS[id].horas}h</td><td>${precoVenda({ id, chem: true })} · <span class="g">🌿${precoVenda({ id, chem: false })}</span></td><td>${growing(id)}</td></tr>`).join("")}</tbody></table>
-      <p class="small muted">🌿 = preço sem agrotóxico. 🌱 = pés plantados. Os que dão mais dinheiro por hora estão no topo.</p>`;
+    const ids = Object.keys(CROPS).filter((id) => !CROPS[id].companheira && doEpoca(id)).sort((a, b) => CROPS[b].venda / CROPS[b].dias - CROPS[a].venda / CROPS[a].dias);
+    h += `<table class="plantab"><thead><tr><th>${SEA().icone} da época</th><th>⏱️</th><th>🪙 venda</th><th>🌱</th></tr></thead><tbody>${ids.map((id) => `<tr class="${e && e.id === id ? "hot" : ""}"><td>${cropIcon(id)} ${CROPS[id].nome}</td><td>${CROPS[id].dias}d</td><td>${precoVenda({ id, chem: true })} · <span class="g">🌿${precoVenda({ id, chem: false })}</span></td><td>${growing(id)}</td></tr>`).join("")}</tbody></table>
+      <p class="small muted">🌿 = preço sem agrotóxico. 🌱 = pés plantados. ⏱️ = dias para colher (regando todo dia). Os que dão mais dinheiro por dia estão no topo.</p>`;
     return h;
   }
   function openDiary(tab = "plantio") {
@@ -1352,82 +1355,85 @@
 
   /* ---------- relógio: cada hora de jogo ---------- */
   /* ---------- relógio: cada hora de jogo ---------- */
+  /* Ritmo como no Stardew Valley: a horta cresce de um dia para o outro.
+     Durante o dia passam só as refeições, os pedidos, a conserva e as joaninhas. */
+  const ateHoje = () => (G.day - 1) * 24 + 20;                 // hoje, 20h (em horas absolutas)
+  const prazoTxt = (e) => (e.expira > ateHoje() ? "até amanhã às 20h" : e.expira - absH() <= 2 ? `só mais ${Math.max(0, e.expira - absH())}h!` : "até hoje às 20h");
+  const secaDias = () => (SEA().id === "verao" ? 2 : 3);       // dias sem água até a planta morrer
   function hourTick() {
     G.hour++;
-    let novas = 0; const novasLista = []; const comSede = [], quaseMorrendo = [], pragaAviso = [];
-    G.tiles.forEach((t) => {
-      if (t.joaninhas > 0) t.joaninhas--;
-      const c = t.crop;
-      if (!c || c.dead) { if (t.agua > 0) t.agua--; t.watered = t.agua > 0; return; }
-      const C = CROPS[c.id];
-      if (c.pest) {
-        if (c.pest.morreEm !== undefined) { c.pest.morreEm--; if (c.pest.morreEm <= 0) c.pest = null; }
-        else {
-          c.pest.h++;
-          if (c.pest.h >= PRAGA_DANO) c.dano = 1;
-          if (c.pest.h === PRAGA_MORTE - 3) pragaAviso.push(C.nome.toLowerCase());
-          if (c.pest.h >= PRAGA_MORTE) { c.dead = true; c.pest = null; G.stats.perdidas++; addPts(-5, `${C.nome} perdida para a praga`, "praga"); lose("praga", 20); toast(`🥀 A praga destruiu ${C.nome.toLowerCase()}. Pegue a ⛏️ enxada para limpar o canteiro e plante de novo.`, -5, "bad", 5000); return; }
-        }
-      }
-      if (t.agua > 0) { t.agua--; c.sede = 0; if (c.stage < 3 && !c.pest) c.age += SEA().cresce * (G.up.composteira ? 1.25 : 1); if (t.agua === 0 && c.stage < 3) comSede.push(C.nome.toLowerCase()); }
-      else if (c.stage < 3) { c.sede++; if (c.sede === SEDE_MORTE - 1) quaseMorrendo.push(C.nome.toLowerCase()); if (c.sede >= SEDE_MORTE) { c.dead = true; G.stats.perdidas++; addPts(-5, `${C.nome} morreu de sede`, "sede"); lose("sede", 20); toast(`🥀 ${C.nome} morreu de sede. Pegue a ⛏️ enxada para limpar o canteiro e plante de novo.`, -5, "bad", 5000); return; } }
-      t.watered = t.agua > 0;
-      const was = c.stage;
-      c.stage = c.age >= C.horas ? 3 : Math.min(2, Math.floor((c.age / C.horas) * 3));
-      if (c.stage === 3 && was < 3 && !C.companheira) toast(`✓ ${C.nome} pronta para colher!`, null, "good", 2200);
-      if (c.carencia > 0) c.carencia--;
-    });
-    // novas pragas
-    G.tiles.filter((t) => t.crop && !t.crop.dead && !t.crop.pest && t.crop.age >= 1 && t.crop.stage < 3 && CROPS[t.crop.id].pragas.length).forEach((t) => {
-      const C = CROPS[t.crop.id];
-      let chance = 0.035 * SEA().praga * Math.max(0.4, 1 - 0.12 * (G.galinhas || 0));   // galinhas comem insetos
-      const viz = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => T(t.x + dx, t.y + dy)).filter((n) => n && n.crop && !n.crop.dead);
-      if (viz.length >= 2 && viz.every((n) => n.crop.id === t.crop.id)) chance += 0.025;   // monocultura
-      let flores = false;
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = T(t.x + dx, t.y + dy); if (n && n.crop && n.crop.id === "flores" && n.crop.stage >= 1) flores = true; }
-      if (flores) chance -= 0.025;
-      let opts = C.pragas;
-      if (t.joaninhas > 0) opts = opts.filter((p) => p !== "pulgao" && p !== "moscaBranca");
-      if (opts.length && rnd() < chance) { t.crop.pest = { id: opts[Math.floor(rnd() * opts.length)], h: 0 }; novas++; novasLista.push(t); }
-    });
-    // garante a primeira praga no dia 1 para ensinar
-    if (!G.primeiraPraga && G.hour >= 8 && !G.tiles.some((t) => t.crop && t.crop.pest)) {
-      const cand = G.tiles.filter((t) => t.crop && !t.crop.dead && t.crop.stage < 3 && CROPS[t.crop.id].pragas.length);
-      if (cand.length) { const t = cand[Math.floor(rnd() * cand.length)]; t.crop.pest = { id: CROPS[t.crop.id].pragas[0], h: 0 }; novas++; novasLista.push(t); }
-    }
-    if (novas) G.primeiraPraga = true;
-    {
-    }
-    if (pragaAviso.length && !quaseMorrendo.length) { sfx.bad(); toast(`⚠️ A praga vai destruir <b>${[...new Set(pragaAviso)].join(", ")}</b> em 3 horas! Trate agora (toque na planta para ver como).`, null, "bad", 4500); }
-    if (quaseMorrendo.length) { sfx.bad(); toast(`⚠️ <b>${[...new Set(quaseMorrendo)].join(", ")}</b> vai morrer de sede em 1 hora! Regue já com 💧.`, null, "bad", 4000); }
-    else if (comSede.length) { beep([880, 660], "sine", 0.08, 0.05); toast(`💧 <b>${[...new Set(comSede)].join(", ")}</b> ficou com sede. Regue em até ${SEDE_MORTE}h.`, null, "", 3500); fact("sede", "💧"); }
-    if (novas) {
-      const t0 = novasLista[0], pp = PESTS[t0.crop.pest.id];
-      sfx.bad();
-      G.alerta = { x: t0.x, y: t0.y, ate: performance.now() + 6000 };
-      if (!naVila()) G.focus = [t0.x, t0.y];
-      toast(`${pp.icone} <b>${pp.nome}</b> atacou ${CROPS[t0.crop.id].nome.toLowerCase()}! Está marcada no mapa. <span class='jeito'>Como tratar: ${pp.trata}</span>`, null, "bad", 6000);
-      const key = "p_" + t0.crop.pest.id;
-      if (!FACTS[key]) FACTS[key] = { t: `<b>${pp.nome}</b>: ${pp.desc}<br><br><b>Como tratar:</b> ${pp.trata}<br><br>Se não tratar, em ${PRAGA_DANO}h a planta fica danificada e em ${PRAGA_MORTE}h ela morre.`, f: "" };
-      setTimeout(() => fact(key, pp.icone), 400);
-    }
+    G.tiles.forEach((t) => { const c = t.crop; if (c && c.pest && c.pest.morreEm !== undefined) { c.pest.morreEm--; if (c.pest.morreEm <= 0) c.pest = null; } });
     const meal = MEALS.find((m) => m.h === G.hour);
     if (meal) eat(meal.nome);
     if (G.hour === MEALS[0].h - 1 || G.hour === MEALS[1].h - 1) { const nm = nextMeal(); if (!nm) toast("🍽️ Daqui a 1 hora é hora de comer e a despensa está vazia! Colha e lave no 🚰 tanque.", null, "bad", 3500); }
-    // pedidos da banca
+    if (G.hour === 17 && G.tiles.some((t) => t.crop && !t.crop.dead && t.crop.stage < 3 && !(t.agua > 0))) toast("💧 Ainda tem planta sem regar hoje. Sem água ela não cresce esta noite.", null, "", 3500);
+    // pedidos da banca (um por dia, valem até o fim do dia seguinte)
     const e = G.encomenda;
-    if (e && e.feita) { G.encomenda = null; G.proxPedido = G.hour + 1; }
-    else if (e && G.hour >= e.expira) { toast(`📦 ${e.avatar} ${esc(e.cliente)} desistiu do pedido.`, null, "", 2500); G.encomenda = null; G.proxPedido = G.hour + 1; changeRep(-0.3); }
-    if (isFeira() && !G.encomenda) G.proxPedido = Math.min(G.proxPedido || 0, G.hour);
+    if (e && e.feita) { G.encomenda = null; }
+    else if (e && absH() >= e.expira) { toast(`📦 ${e.avatar} ${esc(e.cliente)} desistiu do pedido.`, null, "", 2500); G.encomenda = null; changeRep(-0.3); }
+    if (!G.encomenda && absH() >= (G.proxPedido || 0) && G.hour <= DAY_END - 3) { novaEncomenda(); if (G.encomenda) toast(`📦 Novo pedido: ${G.encomenda.avatar} ${esc(G.encomenda.cliente)} quer ${G.encomenda.qtd}× ${cropIcon(G.encomenda.id)} (${prazoTxt(G.encomenda)}). Veja na 🏷️ banca!`, null, "good", 4000); }
     if (G.pote && !G.pote.avisou && poteHoras() <= 0) { G.pote.avisou = true; toast(`🥫 ${conservaNome(G.pote.base)} pronta! Pegue no pote, ao lado da casa.`, null, "good", 3500); }
-
-    if (!G.encomenda && G.hour >= (G.proxPedido || 0) && G.hour <= DAY_END - 3) { novaEncomenda(); if (G.encomenda) toast(`📦 Novo pedido: ${G.encomenda.avatar} ${esc(G.encomenda.cliente)} quer ${G.encomenda.qtd}× ${cropIcon(G.encomenda.id)}. Veja na 🏷️ banca!`, null, "good", 3500); }
-    if (G.hour === 20) toast("🌇 Está escurecendo. Às 22h o José vai dormir.", null, "", 2500);
+    if (G.hour === 20) toast("🌇 Está escurecendo. Às 22h o José vai dormir, e a horta cresce durante a noite.", null, "", 3000);
     if (G.hour >= DAY_END) { sleep(); return; }
     renderClock(); renderInfo(); renderQuests();
     saveGame();
   }
-
+  /* a noite: cresce quem foi regado, seca quem ficou sem água, pragas avançam e aparecem */
+  function cresceNoite() {
+    const linhas = [], prontas = [], mortasSede = [], mortasPraga = [], comSede = [];
+    G.tiles.forEach((t) => {
+      if (t.joaninhas > 0) t.joaninhas--;
+      const c = t.crop;
+      const regada = t.agua > 0;
+      t.agua = Math.max(0, (t.agua || 0) - 1); t.watered = t.agua > 0;
+      if (!c || c.dead) return;
+      const C = CROPS[c.id];
+      if (c.pest && c.pest.morreEm === undefined) {
+        c.pest.h = (c.pest.h || 0) + 1;
+        if (c.pest.h >= PRAGA_DANO) c.dano = 1;
+        if (c.pest.h >= PRAGA_MORTE) { c.dead = true; c.pest = null; G.stats.perdidas++; addPts(-5, `${C.nome} perdida para a praga`, "praga"); lose("praga", 20); mortasPraga.push(cropIcon(c.id)); return; }
+      }
+      if (c.carencia > 0) c.carencia--;
+      if (c.stage >= 3) return;
+      if (regada) { c.sede = 0; if (!c.pest) c.age += SEA().cresce * (G.up.composteira ? 1.25 : 1); }
+      else { c.sede = (c.sede || 0) + 1; if (c.sede >= secaDias()) { c.dead = true; G.stats.perdidas++; addPts(-5, `${C.nome} morreu de sede`, "sede"); lose("sede", 20); mortasSede.push(cropIcon(c.id)); return; } comSede.push(cropIcon(c.id)); }
+      const was = c.stage;
+      c.stage = c.age >= C.dias ? 3 : Math.min(2, Math.floor((c.age / C.dias) * 3));
+      if (c.stage === 3 && was < 3 && !C.companheira) prontas.push(cropIcon(c.id));
+    });
+    // novas pragas aparecem de manhã (galinhas, flores e joaninhas ajudam; monocultura atrapalha)
+    const novas = [];
+    G.tiles.filter((t) => t.crop && !t.crop.dead && !t.crop.pest && t.crop.age > 0 && t.crop.stage < 3 && CROPS[t.crop.id].pragas.length).forEach((t) => {
+      const C = CROPS[t.crop.id];
+      let chance = 0.14 * SEA().praga * Math.max(0.4, 1 - 0.12 * (G.galinhas || 0));
+      const viz = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => T(t.x + dx, t.y + dy)).filter((n) => n && n.crop && !n.crop.dead);
+      if (viz.length >= 2 && viz.every((n) => n.crop.id === t.crop.id)) chance += 0.08;   // monocultura
+      let flores = false;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = T(t.x + dx, t.y + dy); if (n && n.crop && n.crop.id === "flores" && n.crop.stage >= 1) flores = true; }
+      if (flores) chance -= 0.07;
+      let opts = C.pragas;
+      if (t.joaninhas > 0) opts = opts.filter((p) => p !== "pulgao" && p !== "moscaBranca");
+      if (opts.length && rnd() < chance) { t.crop.pest = { id: opts[Math.floor(rnd() * opts.length)], h: 0 }; novas.push(t); }
+    });
+    if (!G.primeiraPraga && !novas.length && G.day >= 3) {   // garante a primeira praga para ensinar
+      const cand = G.tiles.filter((t) => t.crop && !t.crop.dead && !t.crop.pest && t.crop.stage < 3 && CROPS[t.crop.id].pragas.length);
+      if (cand.length) { const t = cand[Math.floor(rnd() * cand.length)]; t.crop.pest = { id: CROPS[t.crop.id].pragas[0], h: 0 }; novas.push(t); }
+    }
+    if (novas.length) {
+      G.primeiraPraga = true;
+      const t0 = novas[0], pp = PESTS[t0.crop.pest.id];
+      G.alerta = { x: t0.x, y: t0.y, ate: performance.now() + 9000 }; G.focus = [t0.x, t0.y];
+      linhas.push(`${pp.icone} <b>${pp.nome}</b> apareceu em ${novas.length > 1 ? `${novas.length} plantas` : CROPS[t0.crop.id].nome.toLowerCase()}! Trate hoje: amanhã a planta fica danificada e, em ${PRAGA_MORTE} dias, morre.`);
+      const key = "p_" + t0.crop.pest.id;
+      if (!FACTS[key]) FACTS[key] = { t: `<b>${pp.nome}</b>: ${pp.desc}<br><br><b>Como tratar:</b> ${pp.trata}<br><br>Se não tratar, em ${PRAGA_DANO} dia a planta fica danificada e em ${PRAGA_MORTE} dias ela morre. Toque na planta para ver os detalhes.`, f: "" };
+      setTimeout(() => fact(key, pp.icone), 2500);
+    }
+    if (prontas.length) linhas.push(`✓ Prontas para colher: ${prontas.join(" ")}`);
+    if (comSede.length) { linhas.push(`💧 Não foram regadas ontem e não cresceram: ${comSede.join(" ")}`); setTimeout(() => fact("sede", "💧"), 2600); }
+    if (mortasSede.length) linhas.push(`🥀 Morreram de sede: ${mortasSede.join(" ")} (use a ⛏️ enxada para limpar)`);
+    if (mortasPraga.length) linhas.push(`🥀 A praga destruiu: ${mortasPraga.join(" ")}`);
+    return linhas;
+  }
 
   function diamond(c, sx, sy, fill, stroke) {
     c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx + TW / 2, sy + TH / 2); c.lineTo(sx, sy + TH); c.lineTo(sx - TW / 2, sy + TH / 2); c.closePath();
@@ -1585,7 +1591,7 @@
         for (let k = 0; k < 8; k++) { const a = time * 3 + k; c.beginPath(); c.arc(cx + Math.cos(a) * 11, cy - 14 + Math.sin(a * 1.3) * 7, 2.6, 0, 7); c.fill(); c.stroke(); }
       }
       // etiqueta com o nome da praga
-      const label = cr.pest.morreEm !== undefined ? `${p.nome} 🐞` : `${p.nome}! ${Math.max(0, PRAGA_MORTE - (cr.pest.h || 0))}h`;
+      const label = cr.pest.morreEm !== undefined ? `${p.nome} 🐞` : `${p.nome}! ${Math.max(0, PRAGA_MORTE - (cr.pest.h || 0))}d`;
       c.font = "bold 10px Fredoka, sans-serif"; const w = c.measureText(label).width + 12;
       const by = cy - 46 + Math.sin(time * 4) * 1.5;
       c.fillStyle = "#e2432a"; c.beginPath(); c.roundRect ? c.roundRect(cx - w / 2, by - 11, w, 15, 7) : c.rect(cx - w / 2, by - 11, w, 15); c.fill();
@@ -1595,7 +1601,7 @@
     // carência e agrotóxico
     if (cr.carencia > 0) {
       c.fillStyle = "#7b3fa0"; c.beginPath(); c.arc(cx + 14, cy - 30, 8, 0, 7); c.fill();
-      c.fillStyle = "#fff"; c.font = "bold 10px Fredoka, sans-serif"; c.textAlign = "center"; c.fillText(cr.carencia + "h", cx + 14, cy - 26.5);
+      c.fillStyle = "#fff"; c.font = "bold 10px Fredoka, sans-serif"; c.textAlign = "center"; c.fillText(cr.carencia + "d", cx + 14, cy - 26.5);
     }
     if (st === 3 && !cr.pest && !C.companheira) {
       c.fillStyle = "rgba(255,255,255,.9)"; c.beginPath(); c.arc(cx, cy - 40 + Math.sin(time * 3) * 2, 6, 0, 7); c.fill();
@@ -1607,12 +1613,13 @@
       c.fillStyle = "rgba(255,255,255,.75)"; c.fillRect(x0 - 1, y0 - 1, w + 2, 6);
       for (let k = 0; k < segs; k++) { c.fillStyle = k < t.agua ? "#3a8de0" : "#d9cbb5"; c.fillRect(x0 + k * (w / segs), y0, w / segs - 1, 4); }
       if (t.agua <= 0) {
-        const left = SEDE_MORTE - cr.sede, pk = 0.5 + 0.5 * Math.sin(time * 6);
-        const by = cy - 50 - (cr.pest ? 16 : 0);
-        c.fillStyle = left <= 1 ? "#c2341f" : "#2f74c0";
-        c.beginPath(); c.roundRect ? c.roundRect(cx - 30, by - 12 - pk * 2, 60, 17, 8) : c.rect(cx - 30, by - 12, 60, 17); c.fill();
-        c.fillStyle = "#fff"; c.font = "bold 10px Fredoka, sans-serif"; c.textAlign = "center";
-        c.fillText(`💧 Sede! ${left}h`, cx, by - 0.5 - pk * 2);
+        const left = secaDias() - (cr.sede || 0), sede = (cr.sede || 0) > 0, pk = sede ? 0.5 + 0.5 * Math.sin(time * 6) : 0;
+        const by = cy - 50 - (cr.pest ? 16 : 0), txt = sede ? `💧 Sede! ${left}d` : "💧 Regar";
+        c.font = "bold 10px Fredoka, sans-serif"; const bw = c.measureText(txt).width + 14;
+        c.fillStyle = sede && left <= 1 ? "#c2341f" : sede ? "#e08a1e" : "#2f74c0";
+        c.beginPath(); c.roundRect ? c.roundRect(cx - bw / 2, by - 12 - pk * 2, bw, 17, 8) : c.rect(cx - bw / 2, by - 12, bw, 17); c.fill();
+        c.fillStyle = "#fff"; c.textAlign = "center";
+        c.fillText(txt, cx, by - 0.5 - pk * 2);
       }
     }
   }
@@ -1775,7 +1782,8 @@
     G.hour = DAY_START;
     G.area = "fazenda"; G.focus = null;
     G.player.x = G.player.tx = 2.5; G.player.y = G.player.ty = 1.6;
-    G.encomenda = null; G.proxPedido = DAY_START + 1;
+    if (G.encomenda && (G.encomenda.feita || G.encomenda.expira <= (G.day - 1) * 24 + DAY_START)) G.encomenda = null;
+    G.proxPedido = (G.day - 1) * 24 + DAY_START + 1;
     const linhas = ["🌙 José foi dormir. Hoje: almoço às 12h e jantar às 19h."];
     if (G.day > YEAR_DAYS) {
       G.day = YEAR_DAYS; G.over = true; clearSave();
@@ -1792,10 +1800,12 @@
       if (mortas.length) linhas.push(`🥀 ${mortas.length} planta(s) murcharam: não eram da época (${[...new Set(mortas)].map(cropIcon).join(" ")}).`);
       setTimeout(() => fact("epoca", "🍂"), 2100);
     }
+    const noite = cresceNoite();
     G.rain = rnd() < S.chuva;
-    G.tiles.forEach((t) => { if (G.rain && t.soil) t.agua = aguaMax(); t.watered = t.agua > 0; });
+    G.tiles.forEach((t) => { if (G.rain && t.soil) t.agua = Math.max(t.agua, 1); t.watered = t.agua > 0; });
     if (G.rain) setTimeout(() => tut("allwatered"), 50);
-    linhas.push(G.rain ? "🌧️ Choveu de manhã: tudo regado!" : "☀️ Amanheceu: confira a água das plantas.");
+    linhas.push(...noite);
+    linhas.push(G.rain ? "🌧️ Choveu de manhã: a horta já está regada hoje!" : "☀️ Amanheceu: regue as plantas hoje para elas crescerem esta noite.");
     if (G.galinhas > 0 && G.up.galinheiro) {
       for (let i = 0; i < G.galinhas; i++) G.despensa.push({ id: "ovo", status: "ok", chem: false });
       G.stats.ovos += G.galinhas; unlock("galinha");
@@ -1809,9 +1819,11 @@
     const F = FESTIVALS[S.id];
     if (isFeira()) linhas.push(`${F.icone} Hoje é sábado: <b>${F.nome}</b> na vila! Vendas na banca valem mais.`);
     else if (weekday() === FEIRA_DIA - 2) linhas.push(`${F.icone} Amanhã é sábado: ${F.nome} na vila. Concurso: ${F.pede}.`);
-    dayfxEl.innerHTML = `<div><b>${WEEKDAYS[weekday()]}, ${diaDaEstacao()} · ${S.icone} ${S.nome}</b><p>${linhas.join("<br>")}</p></div>`;
+    dayfxEl.innerHTML = `<div><b>${WEEKDAYS[weekday()]}, ${diaDaEstacao()} · ${S.icone} ${S.nome}</b><p>${linhas.join("<br>")}</p><button class="btn green" id="bomdia">☀️ Começar o dia</button></div>`;
     dayfxEl.hidden = false;
-    setTimeout(() => { dayfxEl.hidden = true; }, 2300);
+    const fechaDia = () => { dayfxEl.hidden = true; };
+    $("#bomdia").onclick = fechaDia;
+    setTimeout(() => { const b = $("#bomdia"); if (b) b.focus(); }, 50);
     if (G.hearts <= 0) { G.over = true; setTimeout(gameOver, 1950); return; }
     if (estavaNaVila) setupView();
     renderUI();

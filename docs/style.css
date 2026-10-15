@@ -579,3 +579,10 @@ img.mini { width: 40px; height: 40px; border-radius: 10px; border: 2px solid #e8
   .world .zoom { top: auto; bottom: 10px; transform: none; }
   .mealchip .mx { display: none; }
 }
+/* resumo da noite: fica até o jogador tocar em "Começar o dia" */
+.dayfx { animation: dayin .45s ease; pointer-events: auto; background: rgba(31, 39, 71, .95); padding: 20px; }
+@keyframes dayin { from { opacity: 0; } }
+.dayfx > div { max-width: 620px; }
+.dayfx p { font-size: 17px; line-height: 1.55; margin: 10px 0 18px; }
+.dayfx .btn { font-size: 18px; }
+@media (max-height: 480px) { .dayfx b { font-size: 28px; } .dayfx p { font-size: 13.5px; line-height: 1.4; margin: 6px 0 10px; } }
