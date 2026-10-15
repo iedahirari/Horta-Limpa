@@ -568,3 +568,14 @@ button.wm:hover { border-color: var(--sun); } .wm.aqui { border-color: var(--lea
 .rank5 li > span { margin-right: 6px; }
 img.portrait { width: 88px; height: 88px; padding: 0; object-fit: cover; }
 img.mini { width: 40px; height: 40px; border-radius: 10px; border: 2px solid #e8c79a; display: block; }
+.mealchip { border: 0; background: #fff6df; color: var(--ink); border-radius: 10px; padding: 4px 10px; font-size: 13px; font-family: var(--font-body); max-width: 260px; text-align: right; box-shadow: 0 3px 0 var(--line); line-height: 1.3; }
+.mealchip b { font-size: 14px; }
+.mealchip.low { background: #ffe9cc; box-shadow: 0 3px 0 #e8b26a; }
+.mealchip.zero { background: #e2432a; color: #fff; box-shadow: 0 3px 0 #a3281a; animation: pop 1.4s infinite; }
+.foodbox { background: #eef8e9; border: 2px solid var(--leaf); border-radius: 12px; padding: 8px 12px; font-size: 14.5px; }
+.foodbox.low { background: #fff1e0; border-color: #e8b26a; }
+@media (max-width: 700px), (max-height: 480px) { .mealchip { font-size: 11px; max-width: 190px; padding: 3px 7px; } .mealchip b { font-size: 12px; } }
+@media (max-width: 700px), (max-height: 480px) {
+  .world .zoom { top: auto; bottom: 10px; transform: none; }
+  .mealchip .mx { display: none; }
+}

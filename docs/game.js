@@ -337,12 +337,14 @@
         <div class="hud-tl"><div class="quest" id="quest"></div><div class="infocard" id="info" hidden></div></div>
         <div class="hud-tr">
           <div class="clockbox"><div class="cdate" id="cdate"></div><div class="ctime" id="ctime"></div><div class="cmoney" id="coins"></div></div>
+          <button class="mealchip" id="mealchip" title="Comida do José"></button>
           <div class="cbtns"><button class="cb" id="pause" aria-label="Pausar (P)">⏸️</button><button class="cb" id="speed" title="Velocidade do tempo"></button><span class="cb score" id="score-chip"></span></div>
         </div>
         <div class="hud-bl">
           <button class="mb" id="invbtn" title="Inventário (E)">🎒<span>Inventário</span></button>
           <button class="mb" id="diario" title="Diário (J)">📔<span>Diário</span></button>
           <button class="mb" id="map" title="Mapa (M)">🗺️<span>Mapa</span></button>
+          <button class="mb" id="loja" title="Ir às compras na Cooperativa (L)">🛒<span>Loja</span></button>
           <button class="mb" id="guide-chip" title="Guia (G)">📖<span>Guia</span></button>
           <button class="mb" id="sleep" title="Dormir">🌙<span>Dormir</span></button>
           <button class="mb" id="menu" title="Menu (Esc)">⚙️<span>Menu</span></button>
@@ -374,6 +376,8 @@
     $("#diario").onclick = () => openDiary();
     $("#map").onclick = openMap;
     $("#guide-chip").onclick = openGuide;
+    $("#loja").onclick = irLoja;
+    $("#mealchip").onclick = () => openInventory("despensa");
     $("#menu").onclick = openMenu;
     const setPause = (v) => { G.paused = v; renderClock(); saveGame(); };
     $("#pause").onclick = () => setPause(!G.paused);
@@ -396,6 +400,7 @@
     else if (k === "j") openDiary();
     else if (k === "m") openMap();
     else if (k === "g") openGuide();
+    else if (k === "l") irLoja();
     else if (k === "p") { G.paused = !G.paused; renderClock(); }
     else if (k === "escape") openMenu();
   });
@@ -417,7 +422,8 @@
     if (G.coins >= META_MOEDAS) unlock("meta");
     if (repStars() >= 5) unlock("estrelas");
     const hl = tutHL();
-    ["sleep", "map"].forEach((b) => $("#" + b).classList.toggle("pulse", !!(hl && hl.btn === b)));
+    renderMeal();
+    ["sleep", "map", "loja"].forEach((b) => $("#" + b).classList.toggle("pulse", !!(hl && hl.btn === b)));
     renderSlots(); renderInfo(); renderQuests();
   }
   function renderClock() {
@@ -428,7 +434,7 @@
     el.innerHTML = `<span class="wx">${G.rain ? "🌧️" : night ? "🌙" : "☀️"}</span><b>${String(h).padStart(2, "0")}:00</b>${stopped ? `<small class="stopnote">${G.paused ? "pausado" : "⏳ começa ao regar"}</small>` : ""}`;
     const pb = $("#pause"); if (pb) { pb.textContent = G.paused ? "▶️" : "⏸️"; pb.classList.toggle("on", G.paused); }
     const box = $("#pausebox"); if (box) box.hidden = !G.paused;
-    const sp = $("#speed"); if (sp) { sp.textContent = G.speed === 2 ? "⏩2×" : "▶1×"; sp.classList.toggle("on", G.speed === 2); }
+    const sp = $("#speed"); if (sp) { sp.textContent = G.speed === 2 ? "⏩2×" : "▶1×"; sp.classList.toggle("on", G.speed === 2); }    renderMeal();
   }
   /* barra de ferramentas: 12 espaços (o último é a cesta) */
   function hotbarItems() {
@@ -436,6 +442,7 @@
     Object.entries(G.inv.seeds).filter(([, n]) => n > 0).forEach(([id, n]) => list.push({ kind: "seed", id, icon: cropIcon(id), label: CROPS[id].nome.split("-")[0], n, off: !doEpoca(id) }));
     Object.entries(G.inv.prod).filter(([, n]) => n > 0).forEach(([id, n]) => { const p = prod(id); list.push({ kind: "prod", id, icon: p.icone, label: p.nome, n, extra: p.tipo }); });
     if (G.inv.embalagens > 0) list.push({ kind: "emb", id: "emb", icon: "🗑️", label: "Embalagem vazia", n: G.inv.embalagens, extra: "warn" });
+    if (!Object.values(G.inv.seeds).some((n) => n > 0)) list.push({ kind: "loja", id: "loja", icon: "🛒", label: "Sementes", extra: "warn" });
     list.push({ kind: "cesta", id: "cesta", icon: "🧺", label: "Cesta", n: G.cesta.length });
     return list;
   }
@@ -452,6 +459,7 @@
     $("#slots").querySelectorAll(".slot").forEach((b) => {
       b.onclick = () => {
         if (b.dataset.kind === "cesta") { deliver(); return; }
+        if (b.dataset.kind === "loja") { irLoja(); return; }
         G.sel = { kind: b.dataset.kind, id: b.dataset.id };
         tut("sel:" + G.sel.kind + ":" + G.sel.id);
         if (G.sel.kind === "emb") toast("Leve a embalagem até o <b>ponto de devolução ♻️</b> (canto direito) ou… a lixeira? Escolha!", null, "");
@@ -460,6 +468,25 @@
         renderSlots();
       };
     });
+  }
+  /* comida do José: quantas refeições há na despensa e qual é a próxima */
+  const comidaNaDespensa = () => G.despensa.length;
+  function proximaRefeicao() {
+    const h = G.hour;
+    if (h < MEALS[0].h) return { nome: "Almoço", h: MEALS[0].h };
+    if (h < MEALS[1].h) return { nome: "Jantar", h: MEALS[1].h };
+    return { nome: "Almoço amanhã", h: MEALS[0].h };
+  }
+  function renderMeal() {
+    const el = $("#mealchip"); if (!el) return;
+    const n = comidaNaDespensa(), r = proximaRefeicao(), boas = G.despensa.filter((d) => d.status === "ok").length;
+    el.className = "mealchip" + (n === 0 ? " zero" : n <= 2 ? " low" : "");
+    el.innerHTML = `🍽️ ${r.nome} ${String(r.h).padStart(2, "0")}h · <b>${n}</b> <span class="mx">${n === 1 ? "refeição" : "refeições"} na despensa</span>${n === 0 ? " <b>colha e lave comida!</b>" : boas === 0 ? " <span class=\"mx\">(só biscoito)</span>" : ""}`;
+  }
+  /* atalho: o José vai até a Cooperativa (1 hora de caminhada se estiver na fazenda) */
+  function irLoja() {
+    if (G.area !== "vila") { travel("vila"); toast("🛒 O José foi até a Cooperativa, na vila (1 hora de caminhada).", null, "good", 3500); }
+    openShop();
   }
   const cropIcon = (id) => ({ alface: "🥬", couve: "🥬", tomate: "🍅", pimentao: "🌶️", cenoura: "🥕", pepino: "🥒", flores: "🌼", uva: "🍇", milho: "🌽", cebola: "🧅" }[id]);
   /* itens da despensa (plantas, ovos, conservas, biscoito) */
@@ -899,12 +926,14 @@
       ${e && !e.feita ? `<div class="order"><div class="av">${e.avatar}</div><div><b>${esc(e.cliente)}</b> quer <b>${e.qtd}× ${cropIcon(e.id)} ${CROPS[e.id].nome.toLowerCase()}</b>${e.semAgro ? " <b>sem agrotóxico</b>" : ""}.<div class="small">Paga 🪙${e.paga} + 25 pontos${e.npc ? " + amizade ❤️" : ""} · ⏳ faltam ${Math.max(0, e.expira - Math.floor(G.hour))}h · você tem ${tem}/${e.qtd}</div></div>
         <button class="btn" id="entregar" ${tem >= e.qtd ? "" : "disabled"}>Entregar</button></div>`
         : `<div class="order done" style="background:#f3eee5;border-color:var(--line)">⏳ Nenhum pedido agora. Novos pedidos chegam ao longo do dia.</div>`}
+      <div class="foodbox ${comidaNaDespensa() <= 2 ? "low" : ""}">🍽️ <b>Comida do José:</b> ${comidaNaDespensa()} ${comidaNaDespensa() === 1 ? "refeição guardada" : "refeições guardadas"}. Ele come <b>1 item da despensa no almoço (12h) e 1 no jantar (19h)</b>, sozinho. Guarde pelo menos 2 e venda só o que sobrar.</div>
       <h3>🥫 Para vender</h3>
       ${linhas || `<p class="small muted">Nada para vender. Colha e lave no 🚰 tanque primeiro.</p>`}
       <p class="small" style="color:${G.despensa.length <= 1 ? "var(--bad)" : "var(--muted)"}">🍽️ Guarde comida para o José (almoço 12h, jantar 19h)! ${prox ? `Na próxima refeição ele come: ${itemIcon(prox)} ${esc(itemNome(prox)).toLowerCase()}.` : "<b>A despensa está vazia.</b>"}</p>
       <div><button class="btn ghost" id="close">Voltar</button></div></div>`);
     modalEl.querySelectorAll(".sell").forEach((b) => {
       b.onclick = () => {
+        if (comidaNaDespensa() <= 2 && !b.dataset.ok) { b.dataset.ok = "1"; const sobra = comidaNaDespensa() - 1; b.textContent = `Vender mesmo? ${sobra === 1 ? "Sobra 1 refeição" : sobra === 0 ? "Não sobra comida!" : `Sobram ${sobra} refeições`}`; b.classList.add("danger"); toast("⚠️ Essa é a comida do José! Se vender, ele pode passar fome no almoço ou no jantar.", null, "bad", 4000); return; }
         const i = +b.dataset.i, d = G.despensa[i], v = precoVenda(d);
         G.despensa.splice(i, 1); G.coins += v; G.vendidos++;
         if (!d.chem) changeRep(0.2);

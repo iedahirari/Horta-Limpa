@@ -143,8 +143,8 @@ const TUTORIAL = [
   { t: "Toque no canteiro para plantar.", hl: { tile: [3, 3] }, ev: "plant" },
   { t: "Planta precisa de água! Pegue o 💧 regador e regue o canteiro.", hl: { slot: "tool:regador" }, ev: "water" },
   { t: "O relógio começou a andar (canto de cima, à direita). Plante mais e regue tudo. À noite eu durmo sozinho, ou toque em 🌙 para pular para amanhã.", hl: { btn: "sleep" }, ev: "sleep" },
-  { t: "Bom dia! Embaixo de cada planta tem uma barrinha azul de água: quando acaba, aparece “💧 Sede!”. Eu almoço às 12h e janto às 19h com o que tiver na despensa.", hl: { slot: "tool:regador" }, ev: "allwatered" },
-  { t: "As sementes e os tratamentos ficam na vila. Toque em 🗺️ Mapa (ou na placa ➜ Vila) e entre na Cooperativa.", hl: { btn: "map" }, ev: "shop" },
+  { t: "Bom dia! Embaixo de cada planta tem uma barrinha azul de água: quando acaba, aparece “💧 Sede!”. Eu almoço às 12h e janto às 19h com o que tiver na despensa: o 🍽️ embaixo do relógio mostra quanta comida eu tenho.", hl: { slot: "tool:regador" }, ev: "allwatered" },
+  { t: "As sementes e os tratamentos são vendidos na Cooperativa, na vila. Toque em 🛒 Loja (no canto de baixo, à esquerda) e eu vou até lá.", hl: { btn: "loja" }, ev: "shop" },
   { t: "Na vila moram meus vizinhos: converse com eles, cada um sabe muita coisa! Depois volte para a fazenda, cuide das pragas e colha quando aparecer o ✓.", hl: null, ev: "harvest" },
   { t: "Colheu! Toque na 🧺 cesta da barra (ou no 🚰 tanque) para lavar do jeito certo. Depois o laboratório analisa.", hl: { btn: "deliver", tile: [7, 2] }, ev: "deliver" },
   { t: "Na 🏷️ banca (aqui na fazenda) eu vendo o que sobra e atendo pedidos dos vizinhos. Sem agrotóxico vale mais! Mas guarde comida para mim.", hl: { tile: [0, 6] }, ev: "banca" },
@@ -157,7 +157,7 @@ const START_PANTRY = 3;
 Object.assign(FACTS, {
   ultra:    { t: "Biscoito de pacote não é saída: o Idec encontrou agrotóxico em até 59% dos ultraprocessados testados, e eles nem entram na análise de frutas e verduras da Anvisa.", f: "Idec, 2026" },
   fome:     { t: "Sem comida na despensa, o José fica fraco. Plante o suficiente e colha na hora certa!", f: "" },
-  despensa: { t: "O que o laboratório aprova vai para a despensa. Alimento irregular o José não come: vai fora, e a colheita é perdida.", f: "" },
+  despensa: { t: "O que o laboratório aprova vai para a <b>despensa</b>: é a comida do José. Ele come sozinho <b>1 item no almoço (12h) e 1 no jantar (19h)</b>. Fique de olho no 🍽️ embaixo do relógio e guarde sempre pelo menos 2 itens; venda na banca só o que sobrar. Alimento irregular vai fora.", f: "" },
 });
 
 
