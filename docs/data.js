@@ -292,10 +292,10 @@ const UPGRADES = [
    ESTAÇÕES DO ANO (7 dias cada, em sequência, como no Stardew Valley)
    ========================================================== */
 const SEASONS = [
-  { id: "primavera", nome: "Primavera", icone: "🌸", desc: "Clima bom para aprender. Tomate, pimentão e verduras.", praga: 1, cresce: 1, agua: 0, chuva: 0.25 },
-  { id: "verao",     nome: "Verão",     icone: "☀️", desc: "Calor: mais pragas e a terra seca mais rápido. Chegam 🍇 uva, 🌽 milho e 🥒 pepino.", praga: 1.5, cresce: 1, agua: -2, chuva: 0.35 },
-  { id: "outono",    nome: "Outono",    icone: "🍂", desc: "Temperatura amena. Voltam as verduras e chega a 🧅 cebola.", praga: 1, cresce: 0.9, agua: 0, chuva: 0.2 },
-  { id: "inverno",   nome: "Inverno",   icone: "❄️", desc: "Frio: as plantas crescem devagar, mas há menos pragas. Planeje a despensa!", praga: 0.6, cresce: 0.75, agua: 1, chuva: 0.15 },
+  { id: "primavera", nome: "Primavera", icone: "🌸", desc: "Clima bom para aprender. Tomate, pimentão e verduras.", praga: 1, cresce: 1, agua: 0, chuva: 0.25, meta: "Cultive tomate ou pimentão e cuide das pragas sem agrotóxico (joaninhas ou catar à mão)." },
+  { id: "verao",     nome: "Verão",     icone: "☀️", desc: "Calor: mais pragas e a terra seca mais rápido. Chegam 🍇 uva, 🌽 milho e 🥒 pepino.", praga: 1.5, cresce: 1, agua: -2, chuva: 0.35, meta: "No calor, confira a carência antes de colher e lave tudo no tanque." },
+  { id: "outono",    nome: "Outono",    icone: "🍂", desc: "Temperatura amena. Voltam as verduras e chega a 🧅 cebola.", praga: 1, cresce: 0.9, agua: 0, chuva: 0.2, meta: "Plante verduras e cebola da época e compare com os alimentos que você compra." },
+  { id: "inverno",   nome: "Inverno",   icone: "❄️", desc: "Frio: as plantas crescem devagar, mas há menos pragas. Planeje a despensa!", praga: 0.6, cresce: 0.75, agua: 1, chuva: 0.15, meta: "Monte a despensa com alimentos da horta e planeje a próxima safra." },
 ];
 
 /* ==========================================================

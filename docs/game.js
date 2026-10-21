@@ -985,7 +985,8 @@
   const prodBtn = (p) => {
     const have = p.tipo === "epi" ? (G.inv.epi ? "você já tem" : "") : (G.inv.prod[p.id] ? `você tem ${G.inv.prod[p.id]}` : "");
     const dis = G.coins < p.preco || (p.tipo === "epi" && G.inv.epi);
-    const info = p.mata ? `<small><b>Combate:</b> ${p.mata.map((m) => PESTS[m].nome.toLowerCase()).join(", ")}${p.registrado ? `<br><b>Pode usar em:</b> ${p.registrado.map((r) => CROPS[r].nome.toLowerCase()).join(", ")}` : ""}</small>` : "";
+    /* prévia: o que o produto faz, onde pode usar, quanto tempo esperar e quão confiável é, antes de comprar */
+    const info = p.mata ? `<small><b>Combate:</b> ${p.mata.map((m) => PESTS[m].nome.toLowerCase()).join(", ")}${p.registrado ? `<br><b>Pode usar em:</b> ${p.registrado.map((r) => CROPS[r].nome.toLowerCase()).join(", ")}` : ""}<br><b>Carência:</b> ${p.carencia ? `${p.carencia} dia(s)` : "nenhuma (sem resíduo)"}${p.chance ? `<br><b>Eficácia:</b> cerca de ${Math.round(p.chance * 100)}% de chance de funcionar de primeira` : ""}${p.atraso ? `<br><b>Tempo:</b> age em cerca de ${p.atraso} hora(s)` : ""}</small>` : "";
     return `<button class="prod" data-p="${p.id}" ${dis ? "disabled" : ""}><span class="i">${p.icone}</span>
       <b>${p.nome} ${have ? `<span class="have">· ${have}</span>` : ""}</b><span class="price">🪙 ${p.preco}</span><small>${p.desc}</small>${info}</button>`;
   };
@@ -1839,6 +1840,7 @@
       G.tiles.forEach((t) => { if (t.crop && !t.crop.dead && !doEpoca(t.crop.id)) { t.crop.dead = true; t.crop.pest = null; mortas.push(t.crop.id); G.stats.perdidas++; } });
       if (mortas.length) { addPts(-5 * mortas.length, `${mortas.length} planta(s) fora da época murcharam`, "epoca"); lose("epoca", 15 * mortas.length); }
       linhas.push(`${S.icone} <b>Começou o ${S.nome.toLowerCase()}!</b> ${S.desc}`);
+      if (S.meta) linhas.push(`🎯 <b>Objetivo da estação:</b> ${S.meta}`);
       if (mortas.length) linhas.push(`🥀 ${mortas.length} planta(s) murcharam: não eram da época (${[...new Set(mortas)].map(cropIcon).join(" ")}).`);
       setTimeout(() => fact("epoca", "🍂"), 2100);
     }
