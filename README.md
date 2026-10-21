@@ -105,7 +105,8 @@ O mesmo ciclo acontece:
 | 🏢 **AgroMax** (loja de agrotóxicos) | As 5 regras do agrotóxico: produto certo para a **praga**, registrado para a **planta**, **EPI**, **carência** e **devolução da embalagem**. Errar uma regra custa pontos, saúde ou a colheita. | Lei 7.802/1989; Lei 9.974/2000 |
 | 🚰 **Tanque do quintal** | Como lavar cada tipo de alimento: água corrente e escovinha, molho de bicarbonato (1 colher de sopa por litro, 15 a 20 minutos), descascar. Vinagre quase não tira agrotóxico, detergente nunca, e água sanitária é para micróbios. | Anvisa (2025); Marins (2025); Yang et al. (2017) |
 | 🔬 **Raio-X do laboratório** | Agrotóxico não tem cor, cheiro nem sabor: só a análise mostra. O jogo compara a colheita com o mercado: *“de cada 10 amostras de tomate, 4 tinham problema”*. | Anvisa – PARA |
-| 📖 **Guia** | Ranking dos alimentos com mais irregularidades e o que significa “irregular”. Mostra também que irregular não quer dizer, necessariamente, risco imediato. | Anvisa – PARA 2017–2024; MAPA |
+| 📖 **Guia** | Ranking dos alimentos com mais irregularidades, o que significa “irregular” e um glossário com carência, registro para a cultura, EPI, controle biológico e embalagem vazia. Mostra também que irregular não quer dizer, necessariamente, risco imediato. | Anvisa – PARA 2017–2024; MAPA |
+| 🎯 **Estações** | Ao começar cada estação, o jogo mostra um **objetivo** para o jogador seguir naquele período. | Planejamento da safra e da despensa |
 | 🍂 **Estações do ano** | Alimento da época sofre menos com clima e pragas. Fora da época, a planta murcha. | Anvisa (2025); Guia Alimentar (Brasil, 2014) |
 | 🥫 **Despensa e conservas** | Comida de verdade alimenta o José; biscoito de pacote só mata a fome, e o Idec encontrou agrotóxico em até 59% dos ultraprocessados testados. A conserva caseira **não tira** o agrotóxico. | Idec (2026); Guia Alimentar (Brasil, 2014) |
 | 🏛️ **Feira Comunitária** | Conhecer quem produz e comprar alimento local e rastreável. A feira só aceita alimento **sem agrotóxico**. | Questionário do projeto; IN Conjunta nº 2/2018 |
@@ -123,8 +124,8 @@ O mesmo ciclo acontece:
 
 1. Abra o [jogo](https://iedahirari.github.io/Horta-Limpa/), veja a história do José e siga o tutorial.
 2. Prepare a terra ⛏️, plante 🌱, regue 💧 e cuide das pragas 🐛.
-3. Colha ✋ e lave no 🚰 tanque. O Raio-X mostra se o alimento está limpo.
-4. Vá até a vila pelo 🗺️ **Mapa**: compre na Cooperativa, converse com os vizinhos e entregue pacotes na Feira Comunitária.
+3. Colha ✋ e lave no 🚰 tanque. Antes de escolher, você pode tocar em **💡 Ver o jeito certo** para ver a lavagem recomendada (sem pontos). Depois, o Raio-X mostra se o alimento está limpo.
+4. Vá até a vila pelo 🗺️ **Mapa**: compre na Cooperativa, converse com os vizinhos e entregue pacotes na Feira Comunitária. Na Cooperativa e na AgroMax, cada produto mostra a **carência**, a **eficácia** e o **tempo de ação** antes da compra.
 5. Mantenha o José alimentado (almoço às 12h e jantar às 19h) durante as 4 estações.
 
 **Atalhos no computador:**
@@ -141,6 +142,8 @@ O progresso fica salvo no navegador.
 ---
 
 ## Estrutura do repositório
+
+Detalhes técnicos, como publicar, controles e o que editar em cada arquivo, estão em [`docs/README.md`](docs/README.md).
 
 | Caminho | O que tem |
 |---|---|
