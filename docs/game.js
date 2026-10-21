@@ -827,7 +827,14 @@
       <div class="row"><span style="font-size:46px">${cropIcon(id)}</span><div><h2>Como lavar ${n > 1 ? `${n} ${C.nome.toLowerCase()}s` : `${["alface", "couve", "cenoura", "cebola", "uva"].includes(id) ? "a" : "o"} ${C.nome.toLowerCase()}`}?</h2>
       ${C.para !== null ? paraHTML(C) : `<p class="small muted">Mesmo sem agrotóxico, lave para tirar terra e micróbios.</p>`}</div></div>
       <div class="washopts">${opts.map((o, k) => `<button class="wopt" data-k="${k}">${esc(o.t)}</button>`).join("")}</div>
+      <div class="row"><button class="btn ghost" id="wex" style="padding:8px 16px;font-size:15px">💡 Ver o jeito certo</button><span class="small muted">Sem pontos: só para aprender.</span></div>
       <div id="wfb"></div></div>`);
+    /* exemplo: destaca a opção certa antes de o jogador escolher (sem pontos e sem contar como resposta) */
+    $("#wex").onclick = () => {
+      modalEl.querySelectorAll(".wopt").forEach((x, k) => { if (opts[k].ok) x.classList.add("right"); });
+      $("#wex").disabled = true;
+      $("#wex").textContent = "✅ Jeito certo destacado";
+    };
     modalEl.querySelectorAll(".wopt").forEach((b) => {
       b.onclick = () => {
         const o = opts[+b.dataset.k];
@@ -890,6 +897,8 @@
       <div class="rank">${GUIDE.map(([n, v, f]) => `<div class="rk"><span class="n">${n}</span><span class="bar"><span style="width:${(v / max) * 100}%;background:${v >= 30 ? "var(--tomato)" : v >= 15 ? "var(--sun)" : "var(--leaf)"}"></span></span><span class="v">${String(v).replace(".", ",")}%</span><small>${f}</small></div>`).join("")}</div>
       <h3>🚿 Como lavar do jeito certo</h3>
       <div class="washlist">${GUIDE_WASH.map(([i, n, t, k]) => `<div class="wl ${k}"><span class="i">${i}</span><div><b>${n}</b><br><span class="small">${t}</span></div></div>`).join("")}</div>
+      <h3>📚 Conceitos</h3>
+      <div class="washlist">${GUIDE_CONCEITOS.map((c) => `<div class="wl"><span class="i">📘</span><div><b>${c.termo}</b><br><span class="small">${c.texto}</span><br><span class="small muted">👉 ${c.onde}</span></div></div>`).join("")}</div>
       <h3>💡 Dicas</h3><ul class="small">${GUIDE_TIPS.map((t) => `<li>${t}</li>`).join("")}</ul>
       <p class="small muted">Fontes: Anvisa, programa PARA (2017–2024); Ministério da Agricultura – MAPA (2020); Marins (2025); Yang et al. (2017).</p>
       </div>`);

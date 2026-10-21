@@ -53,7 +53,7 @@ Abra `index.html` no navegador. Não precisa instalar nada.
 
 ## Publicar no GitHub Pages
 Este jogo fica na pasta `docs/` do repositório. Em **Settings → Pages → Deploy from a branch**, escolha a branch `main` e a pasta **`/docs`**, e clique em **Save**.
-Link do jogo: https://iedahirari.github.io/Itiner-rio-Extensionista-II/
+Link do jogo: https://iedahirari.github.io/Horta-Limpa/
 
 ## Controles
 - **Computador:** clique no tile com o item escolhido na barra. As teclas 1 a 0 (ou a roda do mouse) trocam o item. Atalhos: E inventário, J diário, M mapa, G guia, P pausa e Esc menu. Use ＋ e － para o zoom e arraste para mover a câmera.

@@ -250,6 +250,15 @@ const GUIDE_TIPS = [
   "Prefira alimentos da época e com o produtor no rótulo (rastreáveis).",
   "Conheça produtores orgânicos de Mogi: são 17 cadastrados no Ministério da Agricultura.",
 ];
+/* Conceitos do Guia: cada termo tem uma explicação curta e onde aparece no jogo (uma página por tema, com atalho para a prática). */
+const GUIDE_CONCEITOS = [
+  { termo: "Carência", texto: "É o tempo entre a última aplicação e a colheita. Colher antes do prazo deixa resíduo no alimento.", onde: "Aparece na AgroMax e na prévia da Loja, em dias." },
+  { termo: "Registro para a cultura", texto: "Um agrotóxico só pode ser usado nas plantas listadas no rótulo. Fora disso, o alimento sai irregular, mesmo que a praga tenha sumido.", onde: "Aparece como 'Pode usar em' na AgroMax." },
+  { termo: "EPI", texto: "Equipamento de proteção individual: luvas, máscara, óculos, avental e botas. É obrigatório para aplicar agrotóxico.", onde: "Compre o EPI na AgroMax antes de aplicar." },
+  { termo: "Irregular", texto: "Na análise da Anvisa, é a amostra com agrotóxico acima do limite ou com um produto não permitido para aquele alimento. Não quer dizer, necessariamente, risco imediato.", onde: "Aparece no Raio-X da colheita." },
+  { termo: "Controle biológico", texto: "Usar inimigos naturais da praga, como as joaninhas, para controlá-la sem deixar resíduo.", onde: "As joaninhas aparecem nas alternativas da Cooperativa." },
+  { termo: "Embalagem vazia", texto: "Deve ser lavada e devolvida ao ponto de recebimento. Nunca vai no lixo comum (Lei 9.974/2000).", onde: "Aparece ao devolver embalagens na fazenda." },
+];
 
 
 /* ==========================================================
