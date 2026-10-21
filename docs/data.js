@@ -6,7 +6,7 @@
 
 const SEASON_DAYS = 7;       // dias por estação (o ano tem 4 estações = 28 dias)
 const YEAR_DAYS = SEASON_DAYS * 4;
-const HOUR_MS = 7000;        // 1 hora de jogo = 7 segundos reais (um dia ≈ 2 minutos; no ⏩ 2x, 1 minuto)
+const HOUR_MS = 42000;       // 1 hora de jogo = 42 segundos reais, o mesmo ritmo do Stardew Valley (um dia de 6h às 22h ≈ 11 minutos; no ⏩ 2x, cerca de 5,5 minutos)
 const DAY_START = 6, DAY_END = 22; // o dia vai das 6h às 22h
 const PRAGA_DANO = 1, PRAGA_MORTE = 3;   // dias de praga até danificar / destruir (como no Stardew, tudo muda de um dia para o outro)
 const META_MOEDAS = 300;     // meta do ano: juntar moedas vendendo na banca
